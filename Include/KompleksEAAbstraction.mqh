@@ -4286,22 +4286,24 @@ class SignalIn {
         if (tradeType == "ALL" || tradeType == "TRI" || tradeType == "SINGTRI" || tradeType == "DUALTRI") canPat = cMan.triCandlePat(lCand3, lCand2, lCand);
         if (candlePatternToSignal(canPat) == SIGNAL_UNKNOWN) {
             if (tradeType == "ALL" || tradeType == "DUAL" || tradeType == "DUALTRI" || tradeType == "SINGDUAL") canPat = cMan.dualCandlePat(lCand2, lCand);
-        } else if (DRAW) {
-            cMan.drawRectAndTexton3Cand(lCand3, lCand2, lCand, StringSubstr(EnumToString(canPat), 11));
-            drawn = true;
+        } else {
+            if (DRAW) cMan.drawRectAndTexton3Cand(lCand3, lCand2, lCand, StringSubstr(EnumToString(canPat), 11));
             if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(canPat), 11) + " detected");
+            drawn = true;
         }
         
         ENUM_SIGNAL catSig = candlePatternToSignal(canPat);
         if (catSig == SIGNAL_UNKNOWN) {
             if (tradeType == "ALL" || tradeType == "SING" || tradeType == "SINGDUAL" || tradeType == "SINGTRI") catSig = candleCatToSignal(canCat);
-        } else if (DRAW && !drawn) {
-            cMan.drawRectAndTexton2Cand(lCand2, lCand, StringSubstr(EnumToString(canPat), 11));
-            drawn = true;
-            if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(canPat), 11) + " detected");
+        } else {
+            if (!drawn) {
+                if (DRAW) cMan.drawRectAndTexton2Cand(lCand2, lCand, StringSubstr(EnumToString(canPat), 11));
+                if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(canPat), 11) + " detected");
+                drawn = true;
+            }
         }
-        if (catSig != SIGNAL_UNKNOWN && DRAW && !drawn) {
-            cMan.drawRectAndTexton1Cand(lCand, StringSubstr(EnumToString(canCat), 11));
+        if (catSig != SIGNAL_UNKNOWN && !drawn) {
+            if (DRAW) cMan.drawRectAndTexton1Cand(lCand, StringSubstr(EnumToString(canCat), 11));
             if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(canCat), 11) + " detected");
             drawn = true;
         }
@@ -4338,10 +4340,8 @@ class SignalIn {
                     sig = candlePatternToSignal(pat);
                     if (sig != SIGNAL_UNKNOWN) {
                         DotRange* last5 = _CW.slice(i);
-                        if (DRAW) {
-                            rectangle* rect = new rectangle("rectt"+StringSubstr(EnumToString(pat), 11)+IntegerToString(last5.A(0).time), last5.minimumBox(), last5.maximumBox());
-                            if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(pat), 11) + " wave detected");
-                        }
+                        if (DRAW) rectangle* rect = new rectangle("rectt"+StringSubstr(EnumToString(pat), 11)+IntegerToString(last5.A(0).time), last5.minimumBox(), last5.maximumBox());
+                        if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(pat), 11) + " wave detected");
                     }
                     break;
                 }
@@ -4358,10 +4358,8 @@ class SignalIn {
                         sig = candlePatternToSignal(pat);
                         if (sig != SIGNAL_UNKNOWN) {
                             DotRange* last5 = _CW.slice(i);
-                            if (DRAW) {
-                                rectangle* rect = new rectangle("rectt"+StringSubstr(EnumToString(pat), 11)+IntegerToString(last5.A(0).time), last5.minimumBox(), last5.maximumBox());
-                                if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(pat), 11) + " wave detected");
-                            }
+                            if (DRAW) rectangle* rect = new rectangle("rectt"+StringSubstr(EnumToString(pat), 11)+IntegerToString(last5.A(0).time), last5.minimumBox(), last5.maximumBox());
+                            if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(pat), 11) + " wave detected");
                         }
                         break;
                     }
@@ -4405,10 +4403,8 @@ class SignalIn {
                         pat = (toSee == CANDLE_PAT_TWEEZZERTOP) ? CANDLE_PAT_EVENINGSTAR : CANDLE_PAT_MORNINGSTAR;
                         sig = candlePatternToSignal(pat);
                         if (sig != SIGNAL_UNKNOWN) {
-                            if (DRAW) {
-                                cMan.drawRectAndTexton2Cand(lCand2, lCand, StringSubstr(EnumToString(pat), 11));
-                                if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(pat), 11) + " candle detected");
-                            }
+                            if (DRAW) cMan.drawRectAndTexton2Cand(lCand2, lCand, StringSubstr(EnumToString(pat), 11));
+                            if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(pat), 11) + " candle detected");
                             if (sig == SIGNAL_BUY) sl = MathMin(lCand2.low, lCand.low);
                             else sl = MathMax(lCand2.high, lCand.high);
                         }
@@ -4429,10 +4425,8 @@ class SignalIn {
                         else if (toSee == CANDLE_PAT_BULLISHCOR) pat = CANDLE_PAT_EVENINGSTAR;
                         sig = candlePatternToSignal(pat);
                         if (sig != SIGNAL_UNKNOWN) {
-                            if (DRAW) {
-                                cMan.drawRectAndTexton2Cand(lCand2, lCand, StringSubstr(EnumToString(pat), 11));
-                                if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(pat), 11) + " candle detected");
-                            }
+                            if (DRAW) cMan.drawRectAndTexton2Cand(lCand2, lCand, StringSubstr(EnumToString(pat), 11));
+                            if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(pat), 11) + " candle detected");
                             if (sig == SIGNAL_BUY) sl = MathMin(lCand2.low, lCand.low);
                             else sl = MathMax(lCand2.high, lCand.high);
                         }
@@ -4452,10 +4446,8 @@ class SignalIn {
         if (sig == SIGNAL_UNKNOWN && (tradeType == "ALL" || tradeType == "DUAL") && (pat2 == CANDLE_PAT_TWEEZZERBOT || pat2 == CANDLE_PAT_TWEEZZERTOP)) {
             sig = candlePatternToSignal(pat2);
             if (sig != SIGNAL_UNKNOWN) {
-                if (DRAW) {
-                    cMan.drawRectAndTexton2Cand(lCand2, lCand, StringSubstr(EnumToString(pat2), 11));
-                    if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(pat2), 11) + " candle detected");
-                }
+                if (DRAW) cMan.drawRectAndTexton2Cand(lCand2, lCand, StringSubstr(EnumToString(pat2), 11));
+                if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(pat2), 11) + " candle detected");
                 if (sig == SIGNAL_BUY) sl = MathMin(lCand2.low, lCand.low);
                 else sl = MathMax(lCand2.high, lCand.high);
             }
@@ -4566,8 +4558,8 @@ class SignalIn {
             if (DRAW) {
                 if (rectDraw) rect = new rectangle("rectt"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(0).time), last5.minimumBox(-5), last5.maximumBox(-5));
                 else drawDoubleChartPattern(last5, StringSubstr(EnumToString(point5Pat.chartpattern), 18), 2);
-                if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(point5Pat.chartpattern), 18) + " detected");
             }
+            if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(point5Pat.chartpattern), 18) + " detected");
             if (!ANALYSIS) {
                 _CW.getWaveCPPredict(__pred, false, true);
                 if (point5Pat.chartpattern == CHARTPATTERN_TYPE_DOUBLETOP) {
@@ -4603,8 +4595,8 @@ class SignalIn {
             if (DRAW) {
                 if (rectDraw) rect = new rectangle("rectt"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(0).time), last5.minimumBox(-7), last5.maximumBox(-7));
                 else drawChannelHeadShoulder(last5, StringSubstr(EnumToString(point5Pat.chartpattern), 18), 2);
-                if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(point5Pat.chartpattern), 18) + " detected");
             }
+            if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(point5Pat.chartpattern), 18) + " detected");
             if (!ANALYSIS) {
                 _CW.getWaveCPPredict(__pred, false, true);
                 if (point5Pat.chartpattern == CHARTPATTERN_TYPE_HEADSHOULDER) {
@@ -4644,8 +4636,8 @@ class SignalIn {
                         drawTlineOnChartLineIndex(last5, -4, -2, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-4).time), clrRed, false, 2);
                     }
                 }
-                if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(point5Pat.chartpattern), 18) + " detected");
             }
+            if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(point5Pat.chartpattern), 18) + " detected");
             if (point5Pat.chartpattern == CHARTPATTERN_TYPE_SYMMETRICALTRIANGLE) {
                 if (!ANALYSIS) {
                     _CW.getWaveCPPredict(__pred, false, true);
@@ -4758,8 +4750,8 @@ class SignalIn {
                 vLine* v1 = new vLine("dsefgedrdgfwe", _ZZ[-3].time);
                 v1 = new vLine("gfdgsergsd", _ZZ[-1].time);
                 //Print(p1, "------", p2);
-                if (ALERT_ON_SIGNAL) MessageBox("Divergence detected");
             }
+            if (ALERT_ON_SIGNAL) MessageBox("Divergence detected");
             if (!ANALYSIS) {
                 STRUCT_CHARTPATTERN_PRED __pred[];
                 _CW.getWaveCPPredict(__pred, false, true);
@@ -4778,10 +4770,8 @@ class SignalIn {
         DotRange* last5 = _CW.slice(-4);
         if (_CW.slice(-4).getReal4PointWaveChartPattern(false).chartpattern == CHARTPATTERN_TYPE_SYMMETRICALTRIANGLE &&
                 _CW.slice(-6, 4).getReal4PointWaveChartPattern(false).chartpattern == CHARTPATTERN_TYPE_SYMMETRICALTRIANGLE) {
-            if (DRAW) {
-                rectangle* rect = new rectangle("recttAntonio"+IntegerToString(_CW[-6].time), _CW.minimumBox(-6), _CW.maximumBox(-6));
-                if (ALERT_ON_SIGNAL) MessageBox("Triangle detected");
-            }
+            if (DRAW) rectangle* rect = new rectangle("recttAntonio"+IntegerToString(_CW[-6].time), _CW.minimumBox(-6), _CW.maximumBox(-6));
+            if (ALERT_ON_SIGNAL) MessageBox("Triangle detected");
             if (!ANALYSIS) {
                 STRUCT_CHARTPATTERN_PRED __pred[];
                 _CW.getWaveCPPredict(__pred, false, true);
