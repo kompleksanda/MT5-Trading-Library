@@ -14,8 +14,8 @@
 #include <Trade\SymbolInfo.mqh>
 #include <Trade\TerminalInfo.mqh>
 
-#include <KompleksUTAbstraction.mqh>
-#include <KompleksCOAbstraction.mqh>
+#include <MT5TradingLibrary/Include/KompleksUTAbstraction.mqh>
+#include <MT5TradingLibrary/Include/KompleksCOAbstraction.mqh>
 
 double getNearestPrice(double pPrice, hLine* &pLines[]) {
     double retPrice[];

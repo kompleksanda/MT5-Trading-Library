@@ -20,7 +20,7 @@
 #include  <Canvas\Charts\LineChart.mqh>
 #include  <Canvas\Charts\PieChart.mqh>
 
-#include <KompleksUTAbstraction.mqh>
+#include <MT5TradingLibrary/Include/KompleksUTAbstraction.mqh>
 // Graphical Objects
 
 class vLine : public CChartObjectVLine{

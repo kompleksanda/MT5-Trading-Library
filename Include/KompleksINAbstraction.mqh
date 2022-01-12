@@ -3,7 +3,7 @@
 //|                                                       KompleksEA |
 //|                                        kompleksanda.blogspot.com |
 //+------------------------------------------------------------------+
-#include <KompleksEAAbstraction.mqh>
+#include <MT5TradingLibrary/Include/KompleksEAAbstraction.mqh>
 #include <Indicators\Trend.mqh>
 #include <Indicators\Oscilators.mqh>
 #include <Indicators\BillWilliams.mqh>
