@@ -4321,7 +4321,6 @@ class SignalIn {
     }
     ENUM_SIGNAL SignalIn::PAtradeChartWaveReversalLikeCandleSticks(DotRange* _CW, uint _limit = 30, int maxLength = 10, bool invert = false, bool withAutoStops = false, bool multiMode = false) {
         if (_CW.Total() < 3) return SIGNAL_UNKNOWN;
-        STRUCT_CHARTPATTERN_PRED __pred[3];
         ENUM_SIGNAL sig = SIGNAL_UNKNOWN;
         if (DRAW) drawWaveDotRange(_CW, "wave", clrYellow);
         ENUM_CANDLE_PATTERN pat = _CW.dualWavePatDetect(_limit);

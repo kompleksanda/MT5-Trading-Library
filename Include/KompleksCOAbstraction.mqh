@@ -498,7 +498,8 @@ void drawChannelDotRange(DotRange* _startD, DotRange* _endD, string prefix="chan
         }
     }
 }
-void drawChannel4DotRange(DotRange* _startD, string prefix="channelll", bool _ray = true, color pTopColor = clrRed, color pBotColor = clrBlue) {
+void drawChannel4DotRange(DotRange* _startD, string prefix="channelll", bool _ray = true, int pWidth = 1, color pTopColor = clrRed, color pBotColor = clrBlue) {
+    if (!CheckPointer(_startD)) return;
     if (_startD.Total() >= 4) {
         tLine* _tL;
         Dot* dd;
@@ -512,6 +513,7 @@ void drawChannel4DotRange(DotRange* _startD, string prefix="channelll", bool _ra
         }
         _tL.Color(pTopColor);
         _tL.RayRight(_ray);
+        _tL.Width(pWidth);
         if (_trendUp) {
             dd = _startD[0];
             _tL = new tLine(prefix+"bot"+IntegerToString(dd.time), dd, (Dot*)_startD[2]);
@@ -521,6 +523,7 @@ void drawChannel4DotRange(DotRange* _startD, string prefix="channelll", bool _ra
         }
         _tL.Color(pBotColor);
         _tL.RayRight(_ray);
+        _tL.Width(pWidth);
     }
 }
 void drawChannelHeadShoulder(DotRange* _startD, string prefix="channelhs", bool _ray = false, color pTopColor = clrRed, color pBotColor = clrBlue) {

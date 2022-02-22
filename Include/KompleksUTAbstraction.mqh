@@ -1665,7 +1665,6 @@ class DotRange : public CArrayObj {
     }
     STRUCT_CHARTPATTERN_CONF get4PointWaveCPCombined(bool _useAngle = true, bool _forSlope = false, bool _other = true) {
         STRUCT_CHARTPATTERN_CONF CPconf = CPinit();
-        STRUCT_CHARTPATTERN_PRED CPpred[3];
         int _total = Total();
         if (_total < 3) return CPconf;
         STRUCT_CHARTPATTERN_CONF _fAng = slice(-4, 3).get3PointWaveCP(_useAngle);
