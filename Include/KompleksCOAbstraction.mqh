@@ -56,6 +56,7 @@ class tLine : public CChartObjectTrend {
         Create(pCID, pName, pWin, dot1.time, dot1.price, dot2.time, dot2.price);
     }
     double valueAtTime(datetime pTime) {return ObjectGetValueByTime(ChartId(), Name(), pTime, 0);}
+    double valueAtTime(void) {return ObjectGetValueByTime(ChartId(), Name(), TimeCurrent(), 0);}
     datetime timeAtPrice(double pPrice) {return ObjectGetTimeByValue(ChartId(), Name(), pPrice, 0);}
     //tLine::~tLine(void) {Delete();}
 };
@@ -524,6 +525,34 @@ void drawChannel4DotRange(DotRange* _startD, string prefix="channelll", bool _ra
         _tL.Color(pBotColor);
         _tL.RayRight(_ray);
         _tL.Width(pWidth);
+    }
+}
+void drawChannel4DotRange(tLine* &pSR[], DotRange* _startD, string prefix="channelll", bool _ray = true, int pWidth = 1, color pTopColor = clrRed, color pBotColor = clrBlue) {
+    if (!CheckPointer(_startD)) return;
+    if (_startD.Total() >= 4) {
+        deletePointerArr(pSR);
+        Dot* dd;
+        int _trendUp = (_startD[0] > _startD[1]) ? false : true;
+        if (_trendUp) {
+            dd = _startD[1];
+            pSR[0] = new tLine(prefix+"top"+IntegerToString(dd.time), dd, (Dot*)_startD[3]);
+        } else {
+            dd = _startD[0];
+            pSR[0] = new tLine(prefix+"top"+IntegerToString(dd.time), dd, (Dot*)_startD[2]);
+        }
+        pSR[0].Color(pTopColor);
+        pSR[0].RayRight(_ray);
+        pSR[0].Width(pWidth);
+        if (_trendUp) {
+            dd = _startD[0];
+            pSR[1] = new tLine(prefix+"bot"+IntegerToString(dd.time), dd, (Dot*)_startD[2]);
+        } else {
+            dd = _startD[1];
+            pSR[1] = new tLine(prefix+"bot"+IntegerToString(dd.time), dd, (Dot*)_startD[3]);
+        }
+        pSR[1].Color(pBotColor);
+        pSR[1].RayRight(_ray);
+        pSR[1].Width(pWidth);
     }
 }
 void drawChannelHeadShoulder(DotRange* _startD, string prefix="channelhs", bool _ray = false, color pTopColor = clrRed, color pBotColor = clrBlue) {
