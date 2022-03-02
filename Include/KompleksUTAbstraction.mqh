@@ -1334,7 +1334,7 @@ class DotRange : public CArrayObj {
                 if (countRange.At(y) < final_day) {
                     double change_in_price = priceRange.At(y) - priceRange.At(x);
                     if ((_dir == "UP" && change_in_price > 0) || (_dir == "DOWN" && change_in_price <= 0)) {
-                        //tl = new tLine("line"+IntegerToString(x)+IntegerToString(y), (Dot*)sH.At(x), (Dot*)sH.At(y));
+                        //tLine* fdsg = new tLine("line"+IntegerToString(x)+IntegerToString(y), (Dot*)At(x), (Dot*)At(y));
                         _startD.addWithCount(At(x), countRange.At(x));
                         _endD.addWithCount(At(y), countRange.At(y));
                     }
@@ -2142,18 +2142,10 @@ class PriceManager {
     protected:
         ENUM_TIMEFRAMES timeFrame;
     public:
-    PriceManager::PriceManager(ENUM_TIMEFRAMES pTF=PERIOD_CURRENT) {
-        timeFrame = pTF;
-    }
-    double PriceManager::currentAsk() {
-        return SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-    }
-    double PriceManager::currentBid() {
-        return SymbolInfoDouble(_Symbol, SYMBOL_BID);
-    }
-    double PriceManager::currentPrice() {
-        return (currentAsk()+currentBid())/2;
-    }
+    PriceManager::PriceManager(ENUM_TIMEFRAMES pTF=PERIOD_CURRENT) {timeFrame = pTF;}
+    double PriceManager::currentAsk() {return SymbolInfoDouble(_Symbol, SYMBOL_ASK);}
+    double PriceManager::currentBid() {return SymbolInfoDouble(_Symbol, SYMBOL_BID);}
+    double PriceManager::currentPrice() {return (currentAsk()+currentBid())/2;}
     PriceRange* PriceManager::lastNclosePrices(int n, int pShift = 0, bool series = true) {
         double prices[];
         ArraySetAsSeries(prices, series);

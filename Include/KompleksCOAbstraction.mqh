@@ -275,83 +275,98 @@ class ellipse : public CChartObjectEllipse{
 };
 class arrow : public CChartObjectArrow {
     public:
-    arrow(string pName, datetime pTime1, double pPrice1, char pCode = OBJ_ARROW, long pCID = 0, int pWin = 0) {
+    arrow(string pName, Dot &dot1, ENUM_OBJECT pCode = OBJ_ARROW, long pCID = 0, int pWin = 0) {
+        arrow::Create(pName, dot1.time, dot1.price, pCode, pCID, pWin);
+    }
+    arrow(string pName, datetime time, double price, ENUM_OBJECT pCode = OBJ_ARROW, long pCID = 0, int pWin = 0) {
+        arrow::Create(pName, time, price, pCode, pCID, pWin);
+    }
+    bool arrow::Create(const string name, const datetime time, const double price, const ENUM_OBJECT code = OBJ_ARROW, long chart_id = 0, const int window = 0) {
+        if(!ObjectCreate(chart_id, name, code, window, time, price)) return(false);
+        if(!Attach(chart_id, name, window, 1)) return(false);
+        if(!ArrowCode(code)) return(false);
+        return(true);
+    }
+};
+class arrowChar : public CChartObjectArrow {
+    public:
+    arrowChar(string pName, datetime pTime1, double pPrice1, char pCode = OBJ_ARROW, long pCID = 0, int pWin = 0) {
         CChartObjectArrow::Create(pCID, pName, pWin, pTime1, pPrice1, pCode);
     }
-    arrow(string pName, Dot &dot1, char pCode = OBJ_ARROW, long pCID = 0, int pWin = 0) {
+    arrowChar(string pName, Dot &dot1, char pCode = OBJ_ARROW, long pCID = 0, int pWin = 0) {
         CChartObjectArrow::Create(pCID, pName, pWin, dot1.time, dot1.price, pCode);
     }
 };
 class arrowCheckSign : public CChartObjectArrowCheck {
     public:
-    arrowCheckSign(string pName, datetime pTime1, double pPrice1, char pCode = OBJ_ARROW_CHECK, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, pTime1, pPrice1, pCode);
+    arrowCheckSign(string pName, datetime pTime1, double pPrice1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowCheck::Create(pCID, pName, pWin, pTime1, pPrice1);
     }
-    arrowCheckSign(string pName, Dot &dot1, char pCode = OBJ_ARROW_CHECK, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, dot1.time, dot1.price, pCode);
+    arrowCheckSign(string pName, Dot &dot1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowCheck::Create(pCID, pName, pWin, dot1.time, dot1.price);
     }
 };
 class arrowDown : public CChartObjectArrowDown {
     public:
-    arrowDown(string pName, datetime pTime1, double pPrice1, char pCode = OBJ_ARROW_DOWN, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, pTime1, pPrice1, pCode);
+    arrowDown(string pName, datetime pTime1, double pPrice1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowDown::Create(pCID, pName, pWin, pTime1, pPrice1);
     }
-    arrowDown(string pName, Dot &dot1, char pCode = OBJ_ARROW_DOWN, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, dot1.time, dot1.price, pCode);
+    arrowDown(string pName, Dot &dot1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowDown::Create(pCID, pName, pWin, dot1.time, dot1.price);
     }
 };
 class arrowUp : public CChartObjectArrowUp {
     public:
-    arrowUp(string pName, datetime pTime1, double pPrice1, char pCode = OBJ_ARROW_UP, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, pTime1, pPrice1, pCode);
+    arrowUp(string pName, datetime pTime1, double pPrice1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowUp::Create(pCID, pName, pWin, pTime1, pPrice1);
     }
-    arrowUp(string pName, Dot &dot1, char pCode = OBJ_ARROW_UP, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, dot1.time, dot1.price, pCode);
+    arrowUp(string pName, Dot &dot1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowUp::Create(pCID, pName, pWin, dot1.time, dot1.price);
     }
 };
 class arrowLeftPrice : public CChartObjectArrowLeftPrice {
     public:
-    arrowLeftPrice(string pName, datetime pTime1, double pPrice1, char pCode = OBJ_ARROW_LEFT_PRICE, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, pTime1, pPrice1, pCode);
+    arrowLeftPrice(string pName, datetime pTime1, double pPrice1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowLeftPrice::Create(pCID, pName, pWin, pTime1, pPrice1);
     }
-    arrowLeftPrice(string pName, Dot &dot1, char pCode = OBJ_ARROW_LEFT_PRICE, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, dot1.time, dot1.price, pCode);
+    arrowLeftPrice(string pName, Dot &dot1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowLeftPrice::Create(pCID, pName, pWin, dot1.time, dot1.price);
     }
 };
 class arrowRightPrice : public CChartObjectArrowRightPrice {
     public:
-    arrowRightPrice(string pName, datetime pTime1, double pPrice1, char pCode = OBJ_ARROW_RIGHT_PRICE, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, pTime1, pPrice1, pCode);
+    arrowRightPrice(string pName, datetime pTime1, double pPrice1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowRightPrice::Create(pCID, pName, pWin, pTime1, pPrice1);
     }
-    arrowRightPrice(string pName, Dot &dot1, char pCode = OBJ_ARROW_RIGHT_PRICE, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, dot1.time, dot1.price, pCode);
+    arrowRightPrice(string pName, Dot &dot1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowRightPrice::Create(pCID, pName, pWin, dot1.time, dot1.price);
     }
 };
 class arrowStopSign : public CChartObjectArrowStop {
     public:
-    arrowStopSign(string pName, datetime pTime1, double pPrice1, char pCode = OBJ_ARROW_STOP, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, pTime1, pPrice1, pCode);
+    arrowStopSign(string pName, datetime pTime1, double pPrice1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowStop::Create(pCID, pName, pWin, pTime1, pPrice1);
     }
-    arrowStopSign(string pName, Dot &dot1, char pCode = OBJ_ARROW_STOP, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, dot1.time, dot1.price, pCode);
+    arrowStopSign(string pName, Dot &dot1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowStop::Create(pCID, pName, pWin, dot1.time, dot1.price);
     }
 };
 class arrowThumbDown : public CChartObjectArrowThumbDown {
     public:
-    arrowThumbDown(string pName, datetime pTime1, double pPrice1, char pCode = OBJ_ARROW_THUMB_DOWN, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, pTime1, pPrice1, pCode);
+    arrowThumbDown(string pName, datetime pTime1, double pPrice1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowThumbDown::Create(pCID, pName, pWin, pTime1, pPrice1);
     }
-    arrowThumbDown(string pName, Dot &dot1, char pCode = OBJ_ARROW_THUMB_DOWN, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, dot1.time, dot1.price, pCode);
+    arrowThumbDown(string pName, Dot &dot1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowThumbDown::Create(pCID, pName, pWin, dot1.time, dot1.price);
     }
 };
 class arrowThumbUp : public CChartObjectArrowThumbUp {
     public:
-    arrowThumbUp(string pName, datetime pTime1, double pPrice1, char pCode = OBJ_ARROW_THUMB_UP, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, pTime1, pPrice1, pCode);
+    arrowThumbUp(string pName, datetime pTime1, double pPrice1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowThumbUp::Create(pCID, pName, pWin, pTime1, pPrice1);
     }
-    arrowThumbUp(string pName, Dot &dot1, char pCode = OBJ_ARROW_THUMB_UP, long pCID = 0, int pWin = 0) {
-        CChartObjectArrow::Create(pCID, pName, pWin, dot1.time, dot1.price, pCode);
+    arrowThumbUp(string pName, Dot &dot1, long pCID = 0, int pWin = 0) {
+        CChartObjectArrowThumbUp::Create(pCID, pName, pWin, dot1.time, dot1.price);
     }
 };
 
@@ -449,6 +464,7 @@ void drawHlines(double &pPrices[], string prefix, color pColor = clrRed, uint wi
     ObjectsDeleteAll(ChartID(), prefix);
     if (ArraySize(pPrices) != 0) {
         for (int i = 0; i < ArraySize(pPrices); i++) {
+            //Leaks memory
             hLine* hhl = new hLine(prefix+IntegerToString(i), pPrices[i]);
             hhl.Color(pColor);
             hhl.Width(width);
@@ -479,12 +495,14 @@ void drawThickHlines(double& pPrices[][2], hLine* &pLines[], string prefix, colo
 void drawThickHlines(double& pPrices[][2], string prefix, color pColor = clrRed) {
     if (ArraySize(pPrices) != 0) {
         for (int i = 0; i < ArraySize(pPrices)/2; i++) {
+            //leaks memory
             hLine* hhl = new hLine(prefix+IntegerToString(i), pPrices[i][0]);
             hhl.Color(pColor);
             hhl.Width((int)pPrices[i][1]);
         }
     }
 }
+//Draws an upper and lower enclosing trendline on corresponding upper and lower dotrange
 void drawChannelDotRange(DotRange* _startD, DotRange* _endD, string prefix="channel", color pColor = clrRed) {
     if (_startD.Total() != 0) {
         int count = 0;
@@ -499,7 +517,8 @@ void drawChannelDotRange(DotRange* _startD, DotRange* _endD, string prefix="chan
         }
     }
 }
-void drawChannel4DotRange(DotRange* _startD, string prefix="channelll", bool _ray = true, int pWidth = 1, color pTopColor = clrRed, color pBotColor = clrBlue) {
+void drawChannel4DotWave(DotRange* _startD, string prefix="channelll", bool _ray = true, int pWidth = 1, color pTopColor = clrRed, color pBotColor = clrBlue) {
+    //leaks memory
     if (!CheckPointer(_startD)) return;
     if (_startD.Total() >= 4) {
         tLine* _tL;
@@ -527,7 +546,7 @@ void drawChannel4DotRange(DotRange* _startD, string prefix="channelll", bool _ra
         _tL.Width(pWidth);
     }
 }
-void drawChannel4DotRange(tLine* &pSR[], DotRange* _startD, string prefix="channelll", bool _ray = true, int pWidth = 1, color pTopColor = clrRed, color pBotColor = clrBlue) {
+void drawChannel4DotWave(tLine* &pSR[], DotRange* _startD, string prefix="channelll", bool _ray = true, int pWidth = 1, color pTopColor = clrRed, color pBotColor = clrBlue) {
     if (!CheckPointer(_startD)) return;
     if (_startD.Total() >= 4) {
         deletePointerArr(pSR);
@@ -583,15 +602,15 @@ void drawChannelHeadShoulder(DotRange* _startD, string prefix="channelhs", bool 
 void drawDoubleChartPattern(DotRange* _startD, string prefix = "channelD", int _width = 1, bool _ray = false, color pTopColor = clrRed, color pBotColor = clrBlue) {
     if (_startD.Total() >= 5) {
         if (_startD[-5] > _startD[-4]) {
-            drawTlineOnChartLineIndex(_startD, -5, -1, prefix+IntegerToString(_startD.A(-5).time), pTopColor, _ray, _width);
-            drawTlineOnChartLineIndex(_startD, -4, -2, prefix+IntegerToString(_startD.A(-4).time), pBotColor, _ray, _width);
+            drawTlineOnDotRangeIndex(_startD, -5, -1, prefix+IntegerToString(_startD.A(-5).time), pTopColor, _ray, _width);
+            drawTlineOnDotRangeIndex(_startD, -4, -2, prefix+IntegerToString(_startD.A(-4).time), pBotColor, _ray, _width);
         } else {
-            drawTlineOnChartLineIndex(_startD, -4, -2, prefix+IntegerToString(_startD.A(-4).time), pTopColor, _ray, _width);
-            drawTlineOnChartLineIndex(_startD, -5, -1, prefix+IntegerToString(_startD.A(-5).time), pBotColor, _ray, _width);
+            drawTlineOnDotRangeIndex(_startD, -4, -2, prefix+IntegerToString(_startD.A(-4).time), pTopColor, _ray, _width);
+            drawTlineOnDotRangeIndex(_startD, -5, -1, prefix+IntegerToString(_startD.A(-5).time), pBotColor, _ray, _width);
         }
     }
 }
-void drawWaveDotRange(DotRange* wave, string prefix="chartWave", color pColor = clrRed, long _cID = 0, int _wID = 0) {
+void drawLinesDotRange(DotRange* wave, string prefix="chartWave", color pColor = clrRed, long _cID = 0, int _wID = 0) {
     if (!DO_NOT_DRAW_CW) {
         if (wave.Total() < 2) return;
         ObjectsDeleteAll(_cID, prefix);
@@ -603,7 +622,7 @@ void drawWaveDotRange(DotRange* wave, string prefix="chartWave", color pColor = 
         }
     }
 }
-void drawWaveDotRange(tLine* &lines[], DotRange* wave, string prefix="chartWave", color pColor = clrRed, long _cID = 0, int _wID = 0) {
+void drawLinesDotRange(tLine* &lines[], DotRange* wave, string prefix="chartWave", color pColor = clrRed, long _cID = 0, int _wID = 0) {
     if (!DO_NOT_DRAW_CW) {
         if (wave.Total() < 2) return;
         deletePointerArr(lines);
@@ -614,7 +633,41 @@ void drawWaveDotRange(tLine* &lines[], DotRange* wave, string prefix="chartWave"
         }
     }
 }
-void drawTlineOnChartLineIndex(DotRange& _dR, int _p2 = -3, int _p1 = -1, string prefix="TrendChartLine", color pColor = clrRed, bool ray = true, int _width = 1) {
+void drawLinesPairAcrossDotRange(DotRange* fPair, DotRange* sPair, string prefix="chartWave", color pColor = clrRed, long _cID = 0, int _wID = 0) {
+    if (fPair.Total() < 2 || fPair.Total() != sPair.Total()) return;
+    for (int i = 0; i < fPair.Total(); i++) {
+        tLine* tt = new tLine(prefix+IntegerToString(i), fPair[i], sPair[i]);
+        tt.Color(pColor);
+    }
+}
+void drawLinesPairWithinDotRange(DotRange* fPair, string prefix="chartWave", color pColor = clrRed, long _cID = 0, int _wID = 0) {
+    if (fPair.Total() < 2) return;
+    ObjectsDeleteAll(ChartID(), prefix);
+    int count = 0;
+    for (int i = 0; i < fPair.Total()/2; i++) {
+        count = i * 2;
+        tLine* tt = new tLine(prefix+IntegerToString(count), fPair[count], fPair[count+1]);
+        tt.Color(pColor);
+    }
+}
+void drawSymbolsDotRange(DotRange* wave, ENUM_OBJECT obj = OBJ_ARROW, string prefix="chartbols", long _cID = 0, int _wID = 0) {
+    if (wave.Total() < 2) return;
+    ObjectsDeleteAll(_cID, prefix);
+    //Causes memory issues in long run
+    arrow* aDown;
+    for (int i = 0; i < wave.Total(); i++) {
+        aDown = new arrow(prefix+IntegerToString(i), wave[i], obj);
+    }
+}
+void drawSymbolsDotWave(DotRange* wave, string prefix="chartbols", ENUM_OBJECT objtop = OBJ_ARROW_SELL, ENUM_OBJECT objbot = OBJ_ARROW_BUY, long _cID = 0, int _wID = 0) {
+    if (wave.Total() < 2) return;
+    DotRange* _top = new DotRange;
+    DotRange* _bot = new DotRange;
+    wave.separateWave(_top, _bot);
+    drawSymbolsDotRange(_top, objtop, prefix + "top");
+    drawSymbolsDotRange(_bot, objbot, prefix + "bot");
+}
+void drawTlineOnDotRangeIndex(DotRange& _dR, int _p2 = -3, int _p1 = -1, string prefix="TrendChartLine", color pColor = clrRed, bool ray = true, int _width = 1) {
     tLine* tL = new tLine(prefix+IntegerToString(_dR.A(_p2).time), _dR.A(_p2), _dR.A(_p1));
     tL.Color(pColor);
     tL.Width(_width);
@@ -622,11 +675,11 @@ void drawTlineOnChartLineIndex(DotRange& _dR, int _p2 = -3, int _p1 = -1, string
 }
 void drawTopTlineonChartLine(DotRange& _dR, DotRange* _top) {
     if (_dR.chartWaveDirection() == 1) _top = _top.slice(0, _top.Total()-1);
-    if (_top.last3LinesUp()) drawTlineOnChartLineIndex(_top, -3, -1, "TopTCL", clrRed);
+    if (_top.last3LinesUp()) drawTlineOnDotRangeIndex(_top, -3, -1, "TopTCL", clrRed);
 }
 void drawBotTlineonChartLine(DotRange& _dR, DotRange* _bot) {
     if (_dR.chartWaveDirection() == -1) _bot = _bot.slice(0, _bot.Total()-1);
-    if (_bot.last3LinesUp()) drawTlineOnChartLineIndex(_bot, -3, -1, "BotTCL", clrBlue);
+    if (_bot.last3LinesUp()) drawTlineOnDotRangeIndex(_bot, -3, -1, "BotTCL", clrBlue);
 }
 void drawTopBotTlineonChartLine(DotRange& _dR, DotRange* _top, DotRange* _bot) {
     bool topLined = false, botLined = false;
@@ -634,21 +687,21 @@ void drawTopBotTlineonChartLine(DotRange& _dR, DotRange* _top, DotRange* _bot) {
     else _bot = _bot.slice(0, _bot.Total()-1);
     if (_top.last3LinesUp()) {
         ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_top[-3].time));
-        drawTlineOnChartLineIndex(_top, -3, -1, "TopTCL", clrRed);
+        drawTlineOnDotRangeIndex(_top, -3, -1, "TopTCL", clrRed);
         topLined = true;
     }
     if (_bot.last3LinesUp()) {
         ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_bot[-3].time));
-        drawTlineOnChartLineIndex(_bot, -3, -1, "BotTCL", clrBlue);
+        drawTlineOnDotRangeIndex(_bot, -3, -1, "BotTCL", clrBlue);
         botLined = true;
         if (!topLined) {
             ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_top[-3].time));
-            drawTlineOnChartLineIndex(_top, -2, -1, "TempTCL", clrCyan);
+            drawTlineOnDotRangeIndex(_top, -2, -1, "TempTCL", clrCyan);
         }
     }
     if (topLined && !botLined) {
         ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_bot[-3].time));
-        drawTlineOnChartLineIndex(_bot, -2, -1, "TempTCL", clrCyan);
+        drawTlineOnDotRangeIndex(_bot, -2, -1, "TempTCL", clrCyan);
     }
 }
 void drawTopBotTlineonChartLine(DotRange& _dR) {
@@ -664,11 +717,11 @@ void drawTopBotTlineonChartLine2(DotRange& _dR) {
     _dR.separateWave(_top, _bot);
     for (int i = 0; i < _top.Total() - 3; i++) {
         DotRange* lastSlice = _top.slice(i, 4);
-        if (lastSlice.last3LinesUp()) drawTlineOnChartLineIndex(lastSlice, -3, -1, "TopTCL", clrRed);
+        if (lastSlice.last3LinesUp()) drawTlineOnDotRangeIndex(lastSlice, -3, -1, "TopTCL", clrRed);
     }
     for (int i = 0; i < _bot.Total() - 3; i++) {
         DotRange* lastSlice = _bot.slice(i, 4);
-        if (lastSlice.last3LinesUp()) drawTlineOnChartLineIndex(lastSlice, -3, -1, "BotTCL", clrBlue);
+        if (lastSlice.last3LinesUp()) drawTlineOnDotRangeIndex(lastSlice, -3, -1, "BotTCL", clrBlue);
     }
 }
 class ChartManager: public CChart {

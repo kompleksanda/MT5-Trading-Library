@@ -3309,8 +3309,7 @@ class MarketStructureManager :public CandleManager {
                 }
             }
         }
-        //delete highRange; delete lowRange; delete dateRange;
-        delete sH; delete sL; delete startMax; delete endMax; delete startMin; delete endMin;
+        delete highRange; delete lowRange; delete dateRange;
     }
     void MarketStructureManager::getChartWave(DotRange* HighMapBuffer, DotRange* LowMapBuffer, DotRange* ZigZagBuffer, int totBars = 200,
             int inpDepth = 12, int inpDeviation = 5, int inpBackstep = 3, string mode = "HL", DotRange* pPR = NULL) {
@@ -3601,6 +3600,16 @@ class SignalIn {
         utility = pUtility;
         marketVolume = 0;
         multiCount = 0;
+    }
+    ENUM_SIGNAL tradeSignal(ENUM_SIGNAL pSig, bool invert = false) {
+        if (pSig == SIGNAL_BUY) {
+            if (invert) return marketCanSell(false, false, true, "normal", false);
+            else return marketCanBuy(false, false, true, "normal", false);
+        } else if (pSig == SIGNAL_SELL) {
+            if (invert) return marketCanBuy(false, false, true, "normal", false);
+            else return marketCanSell(false, false, true, "normal", false);
+        }
+        return SIGNAL_UNKNOWN;
     }
     ENUM_SIGNAL wavePredictMarket(STRUCT_CHARTPATTERN_PRED &__pred[], int _pick = 0, bool invert = false, bool multiMode = false) {
         if (pMan.positionIsOpen()) {
@@ -4322,7 +4331,7 @@ class SignalIn {
     ENUM_SIGNAL SignalIn::PAtradeChartWaveReversalLikeCandleSticks(DotRange* _CW, uint _limit = 30, int maxLength = 10, bool invert = false, bool withAutoStops = false, bool multiMode = false) {
         if (_CW.Total() < 3) return SIGNAL_UNKNOWN;
         ENUM_SIGNAL sig = SIGNAL_UNKNOWN;
-        if (DRAW) drawWaveDotRange(_CW, "wave", clrYellow);
+        if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         ENUM_CANDLE_PATTERN pat = _CW.dualWavePatDetect(_limit);
         ENUM_CANDLE_PATTERN pat2 = pat;
         if (pat == CANDLE_PAT_BEARISHENG || pat == CANDLE_PAT_BULLISHENG) {
@@ -4480,7 +4489,7 @@ class SignalIn {
     ENUM_SIGNAL SignalIn::PAtradeChartWave(DotRange* _CW, int _pick = 0, bool invert = false, bool multiMode = false) {
         if (_CW.Total() < 3) return SIGNAL_UNKNOWN;
         STRUCT_CHARTPATTERN_PRED __pred[3];
-        if (DRAW) drawWaveDotRange(_CW, "wave", clrYellow);
+        if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         if (!ANALYSIS) {
             _CW.getWaveCPPredict(__pred, false, true);
             //delete _ZZBuffer;
@@ -4494,7 +4503,7 @@ class SignalIn {
     }
     ENUM_SIGNAL SignalIn::PAtradeChartWaveDirHHLL(DotRange* _CW, bool invert = false, bool multiMode = false) {
         if (_CW.Total() < 4) return SIGNAL_UNKNOWN;
-        if (DRAW) drawWaveDotRange(_CW, "wave", clrYellow);
+        if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         if (!ANALYSIS) {
             //if (pMan.positionIsOpen()) {
             //    if (!invert && ((pMan.PositionType() == POSITION_TYPE_SELL && last3.firstmove == -1 && last3.chartpattern == CHARTPATTERN_TYPE_TU) ||
@@ -4516,7 +4525,7 @@ class SignalIn {
     }
     ENUM_SIGNAL SignalIn::PAtradeDirChartWave(DotRange* _CW, bool invert = false, bool multiMode = false) {
         if (_CW.Total() < 3) return SIGNAL_UNKNOWN;
-        if (DRAW) drawWaveDotRange(_CW, "wave", clrYellow);
+        if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         if (!ANALYSIS) {
             ENUM_POSITION_TYPE predType = _CW[-1] > _CW[-2] ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
             //delete _ZZBuffer;
@@ -4538,7 +4547,7 @@ class SignalIn {
             //delete _ZZBuffer;
             return SIGNAL_UNKNOWN;
         }
-        if (DRAW) drawWaveDotRange(_CW, "wave", clrYellow);
+        if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         DotRange* last5 = _CW.slice(-7);
         if (last5 == NULL) return SIGNAL_UNKNOWN;
         STRUCT_CHARTPATTERN_CONF point5Pat = last5.getRealXPointWaveChartPattern(false);
@@ -4628,11 +4637,11 @@ class SignalIn {
                 if (rectDraw) rect = new rectangle("rectt"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(0).time), last5.minimumBox(-4), last5.maximumBox(-4));
                 else {
                     if (last5[-4] > last5[-3]) {
-                        drawTlineOnChartLineIndex(last5, -4, -2, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-4).time), clrBlue, false, 2);
-                        drawTlineOnChartLineIndex(last5, -3, -1, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-3).time), clrRed, false, 2);
+                        drawTlineOnDotRangeIndex(last5, -4, -2, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-4).time), clrBlue, false, 2);
+                        drawTlineOnDotRangeIndex(last5, -3, -1, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-3).time), clrRed, false, 2);
                     } else {
-                        drawTlineOnChartLineIndex(last5, -3, -1, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-3).time), clrBlue, false, 2);
-                        drawTlineOnChartLineIndex(last5, -4, -2, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-4).time), clrRed, false, 2);
+                        drawTlineOnDotRangeIndex(last5, -3, -1, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-3).time), clrBlue, false, 2);
+                        drawTlineOnDotRangeIndex(last5, -4, -2, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-4).time), clrRed, false, 2);
                     }
                 }
             }
@@ -4692,7 +4701,7 @@ class SignalIn {
         return PAtradeChartPattern(cMan.getChartWave(_days, inpDepth, inpDeviation, inpBackstep), _pick, invert, multiMode, rectDraw);
     }
     ENUM_SIGNAL SignalIn::PAtradeCPIf(DotRange* _CW, ENUM_CHARTPATTERN_TYPE _toSee = CHARTPATTERN_TYPE_NT, int _pick = 1, bool invert = false, bool multiMode = false) {
-        if (DRAW) drawWaveDotRange(_CW, "wave", clrYellow);
+        if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         if (!ANALYSIS) {
             if (_CW.get3PointWaveCP(false, 10, false, 40, 60).chartpattern == _toSee) {
                 STRUCT_CHARTPATTERN_PRED __pred[];
@@ -4708,7 +4717,7 @@ class SignalIn {
     }
     ENUM_SIGNAL SignalIn::PAtradeFiboLevels(DotRange* _CW, string level = "50", int _pick = 1, bool invert = false, bool multiMode = false) {
         if (_CW.Total() < 3) return SIGNAL_UNKNOWN;
-        if (DRAW) drawWaveDotRange(_CW, "wave", clrYellow);
+        if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         ObjectsDeleteAll(ChartID(), "sdfs");
         static retraceFibo* fasYHJG12s;
         delete fasYHJG12s;
@@ -4738,7 +4747,7 @@ class SignalIn {
     ENUM_SIGNAL SignalIn::PAtradeDivergenceChartWave(DotRange* osc, DotRange* _CW, int _pick = 1, bool invert = false, bool multiMode = false) {
         DotRange* _ZZ = _CW.slice(-4, 3);
         if (_ZZ == NULL) return SIGNAL_UNKNOWN;
-        if (DRAW) drawWaveDotRange(_CW, "wave", clrYellow);
+        if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         STRUCT_CHARTPATTERN_CONF _conf = _ZZ.get3PointWaveCP(false, 20);
         double p1 = osc.priceAt(_ZZ[-3].time);
         double p2 = osc.priceAt(_ZZ[-1].time);
@@ -4765,7 +4774,7 @@ class SignalIn {
     }
     ENUM_SIGNAL SignalIn::PAtradeAnthonioStrategy(DotRange* _CW, int _pick = 0, bool invert = false, bool multiMode = false) {
         if (_CW.Total() < 6) return SIGNAL_UNKNOWN;
-        if (DRAW) drawWaveDotRange(_CW, "wave", clrYellow);
+        if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         DotRange* last5 = _CW.slice(-4);
         if (_CW.slice(-4).getReal4PointWaveChartPattern(false).chartpattern == CHARTPATTERN_TYPE_SYMMETRICALTRIANGLE &&
                 _CW.slice(-6, 4).getReal4PointWaveChartPattern(false).chartpattern == CHARTPATTERN_TYPE_SYMMETRICALTRIANGLE) {
@@ -4805,6 +4814,47 @@ class SignalIn {
                 if (c_Rp != WRONG_VALUE) {
                     if (c_Rp < closeness) return marketCanSell(false, false, true, "normal", multiMode);
                 }
+            }
+        }
+        return SIGNAL_UNKNOWN;
+    }
+    ENUM_SIGNAL SignalIn::PApriceCrossTrendLine(bool& pTStatus, tLine* pTline, bool invert = false, bool multiMode = false, uint closeness = 10) {
+        if (!CheckPointer(pTline)) return SIGNAL_UNKNOWN;
+        double cPrice = cMan.currentPrice();
+        double tPrice = pTline.valueAtTime();
+        uint pDistance = pricesTOpoint(cPrice, tPrice);
+        if (pTStatus) {
+            if ((cPrice < tPrice && pDistance >= closeness)) {
+                pTStatus = false;
+                if (invert) return marketCanBuy(false, false, true, "normal", multiMode);
+                else return marketCanSell(false, false, true, "normal", multiMode);
+            }
+        } else {
+            if (cPrice > tPrice && pDistance >= closeness) {
+                pTStatus = true;
+                if (invert) return marketCanSell(false, false, true, "normal", multiMode);
+                else return marketCanBuy(false, false, true, "normal", multiMode);
+            }
+        }
+        return SIGNAL_UNKNOWN;
+    }
+    ENUM_SIGNAL SignalIn::PApriceCrossTrendLine(tLine* pTline, bool invert = false, bool multiMode = false, uint closeness = 10) {
+        if (!CheckPointer(pTline)) return SIGNAL_UNKNOWN;
+        static bool aUJD12jsdbsdXs = false;
+        double cPrice = cMan.currentPrice();
+        double tPrice = pTline.valueAtTime();
+        uint pDistance = pricesTOpoint(cPrice, tPrice);
+        if (aUJD12jsdbsdXs) {
+            if (cPrice < tPrice && pDistance >= closeness) {
+                aUJD12jsdbsdXs = false;
+                if (invert) return marketCanBuy(false, false, true, "normal", multiMode);
+                else return marketCanSell(false, false, true, "normal", multiMode);
+            }
+        } else {
+            if (cPrice > tPrice && pDistance >= closeness) {
+                aUJD12jsdbsdXs = true;
+                if (invert) marketCanSell(false, false, true, "normal", multiMode);
+                else return marketCanBuy(false, false, true, "normal", multiMode);
             }
         }
         return SIGNAL_UNKNOWN;
@@ -5164,3 +5214,63 @@ class SignalOut {
         return true;
     }
 };
+/*
+        dR = msMan.getChartWave(DAYS, DEPTH, DEVIATION, BACKSTEP);
+        dR2 = msMan.getChartWave(DAYS/BACKSTEP, DEPTH/3, BACKSTEP/2, BACKSTEP/4);
+        //drawLinesDotRange(dR2, "dave", clrBlue);
+        //drawLinesDotRange(dR, "wave", clrYellow);
+        DotRange* dRR = dR.slice(-5, 4);
+        DotRange* dRR2 = dR2.slice(-5, 4);
+        
+        drawChannel4DotRange(SR, dRR, "ranger", true, 3);
+        drawChannel4DotRange(SR2, dRR2, "dranger", true, 1);
+        
+        ENUM_SIGNAL e11 = sIn.PApriceCrossTrendLine(upStatus, SR[0], false, true, 0);
+        ENUM_SIGNAL e12 = sIn.PApriceCrossTrendLine(downStatus, SR[1], false, true, 0);
+        
+        ENUM_SIGNAL e21 = sIn.PApriceCrossTrendLine(upStatus1, SR2[0], false, true, 0);
+        ENUM_SIGNAL e22 = sIn.PApriceCrossTrendLine(downStatus1, SR2[1], false, true, 0);
+        
+        double cPrice = cMan.currentPrice();
+        
+        if (!pMan.positionIsOpen()) {
+            if (e22 == SIGNAL_SELL && cPrice < SR[0].valueAtTime() && cPrice > SR[1].valueAtTime()) sIn.tradeSignal(e22);
+            else if (e21 == SIGNAL_BUY && cPrice > SR[1].valueAtTime() && cPrice < SR[0].valueAtTime()) sIn.tradeSignal(e21);
+        } else {
+            if (aMan.Profit() > 0) {
+                if ((pMan.PositionType() == POSITION_TYPE_SELL  && e11 == SIGNAL_BUY) ||
+                        (pMan.PositionType() == POSITION_TYPE_BUY  && e12 == SIGNAL_SELL)) {
+                    pMan.closePosition(false);
+                }
+            } else if (aMan.Profit() < 0) {
+                if ((pMan.PositionType() == POSITION_TYPE_SELL && cPrice > SR2[0].valueAtTime()) ||
+                        (pMan.PositionType() == POSITION_TYPE_BUY && cPrice < SR2[1].valueAtTime())) {
+                    pMan.closePosition(false);
+                }
+            }
+        }
+*/
+
+
+/*
+        PriceRange* highRange;
+        PriceRange* lowRange;
+        DateRange* dateRange;
+        highRange = cMan.lastNhighPrices(DAYS, 1, false);
+        lowRange = cMan.lastNlowPrices(DAYS, 1, false);
+        dateRange = cMan.lastNdates(DAYS, 1, false);
+        
+        DotRange* sH = new DotRange(highRange, dateRange).swingHighs();
+        DotRange* sL = new DotRange(lowRange, dateRange).swingLows();
+        
+        DotRange* startMax = new DotRange();
+        DotRange* endMax = new DotRange();
+        sH.allSlopes(startMax, endMax, LINE_LEN_MIN, DAY_DIFF, "DOWN");
+        
+        DotRange* startMin = new DotRange();
+        DotRange* endMin = new DotRange();
+        sL.allSlopes(startMin, endMin, LINE_LEN_MIN, DAY_DIFF, "UP");
+        
+        drawLinesPairAcrossDotRange(startMax, endMax);
+        drawLinesDotRangePair(startMin, endMin, "WaveChart", clrBlue);
+*/
