@@ -3311,6 +3311,36 @@ class MarketStructureManager :public CandleManager {
         }
         delete highRange; delete lowRange; delete dateRange;
     }
+    DotRange* MarketStructureManager::getChartWave2(int totBars = 200, uint pLevel = 3, int pPickMode = 2, uint pMaxUnturn = 0, string mode = "HL", DotRange* pPR = NULL) {
+        PriceRange* highRange;
+        PriceRange* lowRange;
+        DateRange* dateRange;
+        if (mode == "HL") {
+            highRange = lastNhighPrices(totBars, 1, false);
+            lowRange = lastNlowPrices(totBars, 1, false);
+            dateRange = lastNdates(totBars, 1, false);
+        } else if (mode == "OC") {
+            highRange = lastNopenPrices(totBars, 1, false);
+            lowRange = lastNclosePrices(totBars, 1, false);
+            dateRange = lastNdates(totBars, 1, false);
+        } else if (mode == "PRICE") {
+            highRange = pPR.priceRange;
+            lowRange = pPR.priceRange;
+            dateRange = pPR.dateRange;
+        }
+        
+        DotRange* sH = new DotRange(highRange, dateRange);
+        DotRange* sL = new DotRange(lowRange, dateRange);
+        for (uint i = 0; i < pLevel; i++) {
+            sH = sH.swingHighs();
+            sL = sL.swingLows();
+        }
+        
+        //drawSymbolsDotRange(sH, OBJ_ARROW_SELL, "sdfsds");
+        //drawSymbolsDotRange(sL, OBJ_ARROW_BUY, "fgewf");
+        
+        return dotRangesToWave(sH, sL, -1, 1);
+    }
     void MarketStructureManager::getChartWave(DotRange* HighMapBuffer, DotRange* LowMapBuffer, DotRange* ZigZagBuffer, int totBars = 200,
             int inpDepth = 12, int inpDeviation = 5, int inpBackstep = 3, string mode = "HL", DotRange* pPR = NULL) {
         int minRequiredBars = 3 * inpDepth;
