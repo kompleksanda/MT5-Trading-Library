@@ -1261,11 +1261,29 @@ class DotRange : public CArrayObj {
     }
     Dot* operator[](const int index) { return(A(index));}
     void DotRange::clearAll(void) {
-           priceRange.Clear();
-           dateRange.Clear();
-           countRange.Clear();
-           Clear();
-       }
+       priceRange.Clear();
+       dateRange.Clear();
+       countRange.Clear();
+       Clear();
+    }
+    Dot* DotRange::detachAll(int index) {
+       priceRange.Delete(index);
+       dateRange.Delete(index);
+       countRange.Delete(index);
+       return Detach(index);
+    }
+    bool DotRange::deleteAll(int index) {
+       priceRange.Delete(index);
+       dateRange.Delete(index);
+       countRange.Delete(index);
+       return Delete(index);
+    }
+    bool DotRange::deleteRangeAll(int from, int to) {
+       priceRange.DeleteRange(from, to);
+       dateRange.DeleteRange(from, to);
+       countRange.DeleteRange(from, to);
+       return DeleteRange(from, to);
+    }
     void DotRange::operator=(DotRange* other) {
        clearAll();
        AddArray(other);
@@ -2331,4 +2349,439 @@ bool numberPairOverlap(Dot& num11, Dot& num12, Dot& num21, Dot& num22) {
         else if (thisMax >= thatMin) return true;
     }
     return false;
+}
+DotRange* dotRangesToWave(DotRange* pTop, DotRange* pLow, int pickMode = 2, uint pMaxUnturn = 0) {
+    int tTotal = pTop.Total();
+    int lTotal = pLow.Total();
+    DotRange* wave = new DotRange;
+    int countTop = 0;
+    int countLow = 0;
+    int turn = 0;
+    int noTurnCount = 0;
+    int prevTurn = turn;
+    while (true) {
+        if (prevTurn == 0) prevTurn = turn;
+        else {
+            if (prevTurn == turn) noTurnCount++;
+            else {
+                prevTurn = turn;
+                noTurnCount = 0;
+            }
+        }
+        int interTopCount = 0;
+        int interLowCount = 0;
+        
+        if (countLow < lTotal) {
+            while (countTop+interTopCount < tTotal && pTop[countTop+interTopCount].time <= pLow[countLow].time) interTopCount++;
+        } else interTopCount = tTotal - countTop;
+        if (countTop < tTotal) {
+            while (countLow+interLowCount < lTotal && pLow[countLow+interLowCount].time <= pTop[countTop].time) interLowCount++;
+        } else interLowCount = lTotal - countLow;
+        
+        if (interTopCount == 0 && interLowCount == 0) break;
+        
+        if (interTopCount == 0) {
+            if (turn == 1) {
+                if (pMaxUnturn > 0) {
+                    if (pMaxUnturn == noTurnCount) {
+                        Dot* last = wave.detachAll(wave.Total()-1);
+                        if (interLowCount > 1) {
+                            Dot* retLow = waveMulPicker(interLowCount, countLow, countTop, pLow, pTop, wave, pickMode, true);
+                            if (retLow != NULL) {
+                                wave.addWithCount(retLow);
+                                noTurnCount = -1;
+                            } else {
+                                wave.addWithCount(last);
+                                noTurnCount--;
+                            }
+                        } else {
+                            if (wave.Total() > 0) {
+                                if (pLow[countLow] < wave[-1]) {
+                                    wave.addWithCount(pLow[countLow]);
+                                    noTurnCount = -1;
+                                } else {
+                                    wave.addWithCount(last);
+                                    noTurnCount--;
+                                }
+                            } else {
+                                wave.addWithCount(pLow[countLow]);
+                                noTurnCount = -1;
+                            }
+                        }
+                    } else noTurnCount--;
+                }
+                countLow += interLowCount;
+                continue;
+            }
+            if (countTop >= tTotal) {
+                pickWave(turn, interLowCount, countLow, wave[-1], pLow, pTop, wave, pickMode, true);
+            } else {
+                int iinterTopCount = 0;
+                if (countLow < lTotal - interLowCount) {
+                    while (countTop+iinterTopCount < tTotal && pTop[countTop+iinterTopCount].time <= pLow[countLow+interLowCount].time) iinterTopCount++;
+                } else iinterTopCount = tTotal - countTop;
+                if (iinterTopCount > 1) {
+                    Dot* retLow = waveMulPicker(interLowCount, countLow, countTop, pLow, pTop, wave, pickMode, true);
+                    if (retLow == NULL) {
+                        countLow += interLowCount;
+                        countTop += iinterTopCount;
+                        continue;
+                    }
+                    pickWave(turn, interLowCount, countLow, countTop, pLow, pTop, wave, pickMode, true);
+                } else pickWave(turn, interLowCount, countLow, countTop, pLow, pTop, wave, pickMode, true);
+            }
+        } else {
+            if (turn == -1) {
+                if (pMaxUnturn > 0) {
+                    if (pMaxUnturn == noTurnCount) {
+                        Dot* last = wave.detachAll(wave.Total()-1);
+                        if (interTopCount > 1) {
+                            Dot* retTop = waveMulPicker(interTopCount, countTop, countLow, pTop, pLow, wave, pickMode, false);
+                            if (retTop != NULL) {
+                                wave.addWithCount(retTop);
+                                noTurnCount = -1;
+                            } else {
+                                wave.addWithCount(last);
+                                noTurnCount--;
+                            }
+                        } else {
+                            if (wave.Total() > 0) {
+                                if (pTop[countTop] > wave[-1]) {
+                                    wave.addWithCount(pTop[countTop]);
+                                    noTurnCount = -1;
+                                } else {
+                                    wave.addWithCount(last);
+                                    noTurnCount--;
+                                }
+                            } else {
+                                wave.addWithCount(pTop[countTop]);
+                                noTurnCount = -1;
+                            }
+                        }
+                    } else noTurnCount--;
+                }
+                countTop += interTopCount;
+                continue;
+            }
+            if (countLow >= lTotal) {
+                pickWave(turn, interTopCount, countTop, wave[-1], pTop, pLow, wave, pickMode, false);
+            } else {
+                int iinterLowCount = 0;
+                if (countTop < tTotal - interTopCount) {
+                    while (countLow+iinterLowCount < lTotal && pLow[countLow+iinterLowCount].time <= pTop[countTop+interTopCount].time) iinterLowCount++;
+                } else iinterLowCount = lTotal - countLow;
+                if (iinterLowCount > 1) {
+                    Dot* retTop = waveMulPicker(interTopCount, countTop, countLow, pTop, pLow, wave, pickMode, false);
+                    if (retTop == NULL) {
+                        countTop += interTopCount;
+                        countLow += iinterLowCount;
+                        continue;
+                    }
+                    pickWave(turn, interTopCount, countTop, countLow, pTop, pLow, wave, pickMode, false);
+                } else pickWave(turn, interTopCount, countTop, countLow, pTop, pLow, wave, pickMode, false);
+                
+            }
+        }
+    }
+    return wave;
+}
+Dot* waveMulPicker(int iCount, int oCount, int& othCount, DotRange* pRange, DotRange* oRange, DotRange* &wave, int pickMode = 1, bool doLow = true) {
+    Dot* nu = NULL;
+    if (doLow) {
+        if (pickMode == 1) {
+            int picker = iCount-1;
+            if (wave.Total() > 0) {
+                while (pRange[oCount+picker] >= wave[-1] && picker >= 0) {
+                    picker--;
+                }
+            } else {
+                while (pRange[oCount+picker] >= oRange[othCount-1] && picker >= 0) {
+                    picker--;
+                }
+            }
+            if (picker >= 0) {
+                if (wave.Total() > 0) {
+                    if (pRange[oCount+picker] < wave[-1]) return pRange[oCount+picker];
+                } else {
+                    if (pRange[oCount+picker] < oRange[othCount-1]) return pRange[oCount+picker];
+                }
+            }
+        } else if (pickMode == -1) {
+            int picker = 0;
+            if (wave.Total() > 0) {
+                while (pRange[oCount+picker] >= wave[-1] && picker < iCount) {
+                    picker++;
+                }
+            } else {
+                while (pRange[oCount+picker] >= oRange[othCount] && picker < iCount) {
+                    picker++;
+                }
+            }
+            if (picker < iCount) {
+                if (wave.Total() > 0) {
+                    if (pRange[oCount+picker] < wave[-1]) return pRange[oCount+picker];
+                } else {
+                    if (pRange[oCount+picker] < oRange[othCount]) return pRange[oCount+picker];
+                }
+            }
+        } else if (pickMode == 0) {
+            if (wave.Total() > 0) {
+                if (pRange[oCount+((iCount)/2)] < wave[-1]) return pRange[oCount+((iCount)/2)];
+            } else {
+                if (pRange[oCount+((iCount)/2)] < oRange[othCount-1]) return pRange[oCount+((iCount)/2)];
+            }
+            int picker = iCount-1;
+            if (wave.Total() > 0) {
+                while (pRange[oCount+picker] >= wave[-1] && picker >= 0) {
+                    picker--;
+                }
+            } else {
+                while (pRange[oCount+picker] >= oRange[othCount-1] && picker >= 0) {
+                    picker--;
+                }
+            }
+            if (picker >= 0) {
+                if (wave.Total() > 0) {
+                    if (pRange[oCount+picker] < wave[-1]) return pRange[oCount+picker];
+                } else {
+                    if (pRange[oCount+picker] < oRange[othCount-1]) return pRange[oCount+picker];
+                }
+            }
+        } else if (pickMode == 2 || pickMode == -2) {
+            Dot* lowD = pRange.slice(oCount, iCount).minimum();
+            if (wave.Total() > 0) {
+                if (lowD < wave[-1]) return lowD;
+            } else {
+                if (lowD < oRange[othCount]) return lowD;
+            }
+        }
+    } else {
+        if (pickMode == 1) {
+            int picker = iCount-1;
+            if (wave.Total() > 0) {
+                while (pRange[oCount+picker] <= wave[-1] && picker >= 0) {
+                    picker--;
+                }
+            } else {
+                while (pRange[oCount+picker] <= oRange[othCount-1] && picker >= 0) {
+                    picker--;
+                }
+            }
+            if (picker >= 0) {
+                if (wave.Total() > 0) {
+                    if (pRange[oCount+picker] > wave[-1]) return pRange[oCount+picker];
+                } else {
+                    if (pRange[oCount+picker] > oRange[othCount-1]) return pRange[oCount+picker];
+                }
+            }
+        } else if (pickMode == -1) {
+            int picker = 0;
+            if (wave.Total() > 0) {
+                while (pRange[oCount+picker] <= wave[-1] && picker < iCount) {
+                    picker++;
+                }
+            } else {
+                while (pRange[oCount+picker] <= oRange[othCount] && picker < iCount) {
+                    picker++;
+                }
+            }
+            if (picker < iCount) {
+                if (wave.Total() > 0) {
+                    if (pRange[oCount+picker] > wave[-1]) return pRange[oCount+picker];
+                } else {
+                    if (pRange[oCount+picker] > oRange[othCount]) return pRange[oCount+picker];
+                }
+            }
+        } else if (pickMode == 0) {
+            if (wave.Total() > 0) {
+                if (pRange[oCount+(iCount/2)] > wave[-1]) return pRange[oCount+(iCount/2)];
+            } else {
+                if (pRange[oCount+(iCount/2)] > oRange[othCount-1]) return pRange[oCount+(iCount/2)];
+            }
+            int picker = iCount-1;
+            if (wave.Total() > 0) {
+                while (pRange[oCount+picker] <= wave[-1] && picker >= 0) {
+                    picker--;
+                }
+            } else {
+                while (pRange[oCount+picker] <= oRange[othCount-1] && picker >= 0) {
+                    picker--;
+                }
+            }
+            if (picker >= 0) {
+                if (wave.Total() > 0) {
+                    if (pRange[oCount+picker] > wave[-1]) return pRange[oCount+picker];
+                } else {
+                    if (pRange[oCount+picker] > oRange[othCount-1]) return pRange[oCount+picker];
+                }
+            }
+        } else if (pickMode == 2 || pickMode == -2) {
+            Dot* highD = pRange.slice(oCount, iCount).maximum();
+            if (wave.Total() > 0) {
+                if (highD > wave[-1]) return highD;
+            } else {
+                if (highD > oRange[othCount]) return highD;
+            }
+        }
+    }
+    return nu;
+}
+Dot* waveMulPicker(int iCount, int oCount, Dot* oth, DotRange* pRange, DotRange* oRange, DotRange* &wave, int pickMode = 1, bool doLow = true) {
+    Dot* nu = NULL;
+    if (doLow) {
+        if (pickMode == 1) {
+            int picker = iCount-1;
+            while (pRange[oCount+picker] >= oth && picker >= 0) {
+                picker--;
+            }
+            if (picker >= 0 && pRange[oCount+picker] < oth) return pRange[oCount+picker];
+        } else if (pickMode == -1) {
+            int picker = 0;
+            while (pRange[oCount+picker] >= oth && picker < iCount) {
+                picker++;
+            }
+            if (picker < iCount && pRange[oCount+picker] < oth) return pRange[oCount+picker];
+        } else if (pickMode == 0) {
+            if (pRange[oCount+((iCount)/2)] < oth) return pRange[oCount+((iCount)/2)];
+            else {
+                int picker = iCount-1;
+                while (pRange[oCount+picker] >= oth && picker >= 0) {
+                    picker--;
+                }
+                if (picker >= 0 && pRange[oCount+picker] < oth) return pRange[oCount+picker];
+            }
+        } else if (pickMode == 2 || pickMode == -2) {
+            Dot* lowD = pRange.slice(oCount, iCount).minimum();
+            if (lowD < oth) return lowD;
+        }
+    } else {
+        if (pickMode == 1) {
+            int picker = iCount-1;
+            while (pRange[oCount+picker] <= oth && picker >= 0) {
+                picker--;
+            }
+            if (picker >= 0 && pRange[oCount+picker] > oth) return pRange[oCount+picker];
+        } else if (pickMode == -1) {
+            int picker = 0;
+            while (pRange[oCount+picker] <= oth && picker < iCount) {
+                picker++;
+            }
+            if (picker < iCount && pRange[oCount+picker] > oth) return pRange[oCount+picker];
+        } else if (pickMode == 0) {
+            if (pRange[oCount+(iCount/2)] > oth) return pRange[oCount+(iCount/2)];
+            else {
+                int picker = iCount-1;
+                while (pRange[oCount+picker] <= oth && picker >= 0) {
+                    picker--;
+                }
+                if (picker >= 0 && pRange[oCount+picker] > oth) return pRange[oCount+picker];
+            }
+        } else if (pickMode == 2 || pickMode == -2) {
+            Dot* highD = pRange.slice(oCount, iCount).maximum();
+            if (highD > oth) return highD;
+        }
+    }
+    return nu;
+}
+void pickWave(int& turn, int iCount, int& oCount, int& othCount, DotRange* pRange, DotRange* oRange, DotRange* &wave, int pickMode = 1, bool doLow = true) {
+    if (othCount < 0) {othCount = 0; oCount++;return;}
+    if (iCount == 1) {
+        if (doLow) {
+            if (wave.Total() > 0) {
+                if (pRange[oCount] < wave[-1]) {
+                    wave.addWithCount(pRange[oCount]);
+                    turn = 1;
+                }
+            } else {
+                if (pRange[oCount] < oRange[othCount]) {
+                    wave.addWithCount(pRange[oCount]);
+                    turn = 1;
+                } else {
+                    if (turn == 0) {
+                        wave.addWithCount(pRange[oCount]);
+                        turn = 1;
+                    }
+                }
+            }
+        } else {
+            if (wave.Total() > 0) {
+                if (pRange[oCount] > wave[-1]) {
+                    wave.addWithCount(pRange[oCount]);
+                    turn = -1;
+                }
+            } else {
+                if (pRange[oCount] > oRange[othCount]) {
+                    wave.addWithCount(pRange[oCount]);
+                    turn = -1;
+                } else {
+                    if (turn == 0) {
+                        wave.addWithCount(pRange[oCount]);
+                        turn = -1;
+                    }
+                }
+            }
+        }
+        oCount++;
+    } else if (iCount > 1)  {
+        //comes first and it's many
+        Dot* ret;
+        if (doLow) ret = waveMulPicker(iCount, oCount, othCount, pRange, oRange, wave, pickMode, true);
+        else ret = waveMulPicker(iCount, oCount, othCount, pRange, oRange, wave, pickMode, false);
+        if (ret != NULL) {
+            wave.addWithCount(ret);
+            turn = doLow ? 1 : -1;
+        }
+        oCount += iCount;
+    }
+}
+void pickWave(int& turn, int iCount, int& oCount, Dot* oth, DotRange* pRange, DotRange* oRange, DotRange* &wave, int pickMode = 1, bool doLow = true) {
+    if (oth == NULL) {oCount++;return;}
+    if (iCount == 1) {
+        if (doLow) {
+            if (wave.Total() > 0) {
+                if (pRange[oCount] < wave[-1]) {
+                    wave.addWithCount(pRange[oCount]);
+                    turn = 1;
+                }
+            } else {
+                if (pRange[oCount] < oth) {
+                    wave.addWithCount(pRange[oCount]);
+                    turn = 1;
+                } else {
+                    if (turn == 0) {
+                        wave.addWithCount(pRange[oCount]);
+                        turn = 1;
+                    }
+                }
+            }
+        } else {
+            if (wave.Total() > 0) {
+                if (pRange[oCount] > wave[-1]) {
+                    wave.addWithCount(pRange[oCount]);
+                    turn = -1;
+                }
+            } else {
+                if (pRange[oCount] > oth) {
+                    wave.addWithCount(pRange[oCount]);
+                    turn = -1;
+                } else {
+                    if (turn == 0) {
+                        wave.addWithCount(pRange[oCount]);
+                        turn = -1;
+                    }
+                }
+            }
+        }
+        oCount++;
+    } else if (iCount > 1)  {
+        //comes first and it's many
+        Dot* ret;
+        if (doLow) ret = waveMulPicker(iCount, oCount, oth, pRange, oRange, wave, pickMode, true);
+        else ret = waveMulPicker(iCount, oCount, oth, pRange, oRange, wave, pickMode, false);
+        if (ret != NULL) {
+            wave.addWithCount(ret);
+            turn = doLow ? 1 : -1;
+        }
+        oCount += iCount;
+    }
 }

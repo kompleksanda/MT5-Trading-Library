@@ -612,8 +612,8 @@ void drawDoubleChartPattern(DotRange* _startD, string prefix = "channelD", int _
 }
 void drawLinesDotRange(DotRange* wave, string prefix="chartWave", color pColor = clrRed, long _cID = 0, int _wID = 0) {
     if (!DO_NOT_DRAW_CW) {
-        if (wave.Total() < 2) return;
         ObjectsDeleteAll(_cID, prefix);
+        if (wave.Total() < 2) return;
         //Causes memory issues in long run
         tLine* tt;
         for (int i = 1; i < wave.Total(); i++) {
@@ -624,8 +624,8 @@ void drawLinesDotRange(DotRange* wave, string prefix="chartWave", color pColor =
 }
 void drawLinesDotRange(tLine* &lines[], DotRange* wave, string prefix="chartWave", color pColor = clrRed, long _cID = 0, int _wID = 0) {
     if (!DO_NOT_DRAW_CW) {
-        if (wave.Total() < 2) return;
         deletePointerArr(lines);
+        if (wave.Total() < 2) return;
         for (int i = 1; i < wave.Total(); i++) {
             tLine* tt = new tLine(prefix+IntegerToString(i), wave[i-1], wave[i]);
             tt.Color(pColor);
