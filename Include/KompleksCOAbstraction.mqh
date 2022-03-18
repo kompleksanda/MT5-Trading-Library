@@ -442,11 +442,18 @@ class ObjectManager {
     
 };
 
-void drawChartWaveAsThickSR(DotRange& _CW, double relPrice, uint closeness) {
-    double _S[];
-    double _R[];
-    chartWaveToSR(_CW, relPrice, _S, _R);
-    drawHlinesAsThick(_S, _R, closeness);
+void drawChartWaveAsThickSR(DotRange& _CW, double relPrice, uint closeness, bool useLines = true) {
+    if (useLines) {
+        double _S[];
+        double _R[];
+        chartWaveToSR(_CW, relPrice, _S, _R);
+        drawHlinesAsThick(_S, _R, closeness);
+    } else {
+        DotRange* _S = new DotRange;
+        DotRange* _R = new DotRange;
+        chartWaveToSR(_CW, relPrice, _S, _R);
+        drawHlinesAsThick(_S, _R, closeness);
+    }
 }
 void drawChartWaveAsSR(DotRange& _CW, double relPrice) {
     double _S[];
@@ -488,6 +495,16 @@ void drawHlinesAsThick(double& _sup[], double& _res[], uint closeness) {
     drawThickHlines(_SR, _SL, "Tsupport", clrBlue);
     drawThickHlines(_RR, _RL, "Tresistance", clrRed);
 }
+void drawHlinesAsThick(DotRange &_sup, DotRange &_res, uint closeness) {
+    rectangle* _SL[];
+    rectangle* _RL[];
+    STRUCT_RECT_AND_CENTER _RR[];
+    STRUCT_RECT_AND_CENTER _SR[];
+    reducedLines(_sup, _SR, closeness);
+    reducedLines(_res, _RR, closeness);
+    drawThickHlines(_SR, _SL, "Tsupport", clrBlue);
+    drawThickHlines(_RR, _RL, "Tresistance", clrRed);
+}
 void drawThickHlines(double& pPrices[][2], hLine* &pLines[], string prefix, color pColor = clrRed) {
     deletePointerArr(pLines);
     if (ArraySize(pPrices) != 0) {
@@ -496,18 +513,50 @@ void drawThickHlines(double& pPrices[][2], hLine* &pLines[], string prefix, colo
             hhl.Color(pColor);
             hhl.Width((int)pPrices[i][1]);
             addToArr(pLines, hhl);
-            
-            //rectangle rect12 = new rectangle(prefix+IntegerToString(i), Dot())
+        }
+    }
+}
+void drawThickHlines(STRUCT_RECT_AND_CENTER &pPrices[], rectangle* &pLines[], string prefix, color pColor = clrRed) {
+    deletePointerArr(pLines);
+    if (ArraySize(pPrices) != 0) {
+        for (int i = 0; i < ArraySize(pPrices)/2; i++) {
+            rectangle* rect = new rectangle(prefix+IntegerToString(i), pPrices[i].top, pPrices[i].bot);
+            rect.Color(pColor);
+            addToArr(pLines, rect);
         }
     }
 }
 void drawThickHlines(double& pPrices[][2], string prefix, color pColor = clrRed) {
     if (ArraySize(pPrices) != 0) {
+        ObjectsDeleteAll(ChartID(), prefix);
         for (int i = 0; i < ArraySize(pPrices)/2; i++) {
             //leaks memory
             hLine* hhl = new hLine(prefix+IntegerToString(i), pPrices[i][0]);
             hhl.Color(pColor);
             hhl.Width((int)pPrices[i][1]);
+        }
+    }
+}
+void drawThickHlines(STRUCT_RECT_AND_CENTER &pPrices[], string prefix, color pColor = clrRed) {
+    if (ArraySize(pPrices) != 0) {
+        ObjectsDeleteAll(ChartID(), prefix);
+        for (int i = 0; i < ArraySize(pPrices); i++) {
+            rectangle* rect = new rectangle(prefix+IntegerToString(i), pPrices[i].top, pPrices[i].bot);
+            rect.Color(pColor);
+        }
+    }
+}
+//TODO: Work on this code
+void drawThickHlinesAsRectangle(double& pPrices[][2], int pSpace, string prefix, color pColor = clrRed) {
+    if (ArraySize(pPrices) != 0) {
+        ObjectsDeleteAll(ChartID(), prefix);
+        for (int i = 0; i < ArraySize(pPrices)/2; i++) {
+            //leaks memory
+            hLine* hhl = new hLine(prefix+IntegerToString(i), pPrices[i][0]);
+            hhl.Color(pColor);
+            hhl.Width((int)pPrices[i][1]);
+            //rectangle* rect = new rectangle(prefix+IntegerToString(i), pPrices[i], pPrices[i].bot);
+            //rect.Color(pColor);
         }
     }
 }
