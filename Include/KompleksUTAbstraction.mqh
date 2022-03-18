@@ -396,6 +396,12 @@ class Dot : public CObject {
        time = other.time;
     }
 };
+struct STRUCT_RECT_AND_CENTER {
+    int count;
+    double center;
+    Dot top;
+    Dot bot;
+};
 void dotToXY (Dot &dot, int& x, int&y, long chart_id=0, int sub_window=0) {ChartTimePriceToXY(chart_id, sub_window, dot.time, dot.price, x, y);}
 void dotToXY (double price, datetime date, int& x, int&y, long chart_id=0, int sub_window=0) {ChartTimePriceToXY(chart_id, sub_window, date, price, x, y);}
 Dot* XYtoDot (int x, int y, long chart_id = 0, int sub_window = 0) {
@@ -478,6 +484,19 @@ void addToArr(T& arr[], T elem, int sIndex = -1, bool keepConsecutive = true) {
         arr[sIndex] = elem;
     }
 }
+template <typename T, typename D>
+void addToArrRange(T* arr, D* elem, int sIndex = -1, bool keepConsecutive = true) {
+    int arrSize = arr.Total();
+    if (sIndex >= arrSize) sIndex = -1;
+    if (arrSize > 0) {
+        if (keepConsecutive && arr[arrSize-1] == elem) return;
+    }
+    if (sIndex == -1) {
+        arr.addWithCount(elem);
+    } else {
+        arr.insertWithCount(elem, sIndex);
+    }
+}
 template <typename T>
 void deletePointerArr(T* &arr[]) {
     for (int i = 0; i < ArraySize(arr); i++) delete arr[i];
@@ -551,44 +570,6 @@ void adjustPricesWithinLevel(double& arr[], double pPrice, uint pPoint, bool las
         }
         addToArr(arr, pPrice, pIndex);
     }
-}
-void reducedLines(double& arr[], double& newArr[][2], uint pPoint) {
-    ArrayResize(newArr, 0);
-    for (int i = 0; i < ArraySize(arr); i++) {
-        if (ArraySize(newArr) <= 0) {
-            ArrayResize(newArr, 1);
-            newArr[0][0] = arr[i];
-            newArr[0][1] = 1;
-        } else {
-            bool added = false;
-            for (int j = (ArraySize(newArr)/2)-1; j >= 0; j--) {
-                if (pricesTOpoint(newArr[j][0], arr[i]) <= pPoint) {
-                    newArr[j][0] = (newArr[j][0] + arr[i])/2;
-                    newArr[j][1] += 1;
-                    added = true;
-                    break;
-                }
-            }
-            if (!added) {
-                int ssize = ArraySize(newArr)/2;
-                ArrayResize(newArr, ssize+1);
-                newArr[ssize][0] = arr[i];
-                newArr[ssize][1] = 1; 
-            } else {
-                int ssize = ArraySize(newArr)/2;
-                if (ssize >= 2) {
-                    for (int j = ssize-2; j >= 0; j--) {
-                        if (pricesTOpoint(newArr[ssize-1][0], newArr[j][0]) <= 100) {
-                            newArr[j][0] = (newArr[ssize-1][0] + newArr[j][0])/2;
-                            newArr[j][1] += newArr[ssize-1][1];
-                            ArrayRemove(newArr, ssize-1, 1);
-                            break;
-                        }
-                    }
-                }
-            } 
-        }
-    } 
 }
 int priceMARelationship2(double pPrice1, double pPrice2) {
     //pPrice1 = fast, pPrice2 = slow
@@ -2272,6 +2253,13 @@ void chartWaveToSR(DotRange& _CW, double relPrice, double& _sup[], double& _res[
         else addToArr(_sup, _CW[i].price, -1, false);
     }
 }
+void chartWaveToSR(DotRange& _CW, double relPrice, DotRange* _sup, DotRange* _res) {
+    ForEachRange(i, _CW) {
+        if (i == 0 || i == _CW.Total() - 1) continue;
+        if (_CW[i].price > relPrice) addToArrRange(_res, _CW[i], -1, false);
+        else addToArrRange(_sup, _CW[i], -1, false);
+    }
+}
 double calcLR(double& X[], double& Y[]) { //linear regression, datetime, values
     double LR_points_array[ ];
     double LR_koeff_A, LR_koeff_B;
@@ -2804,4 +2792,92 @@ void pickWave(int& turn, int iCount, int& oCount, Dot* oth, DotRange* pRange, Do
         }
         oCount += iCount;
     }
+}
+void reducedLines(double& arr[], double& newArr[][2], uint pPoint) {
+    ArrayResize(newArr, 0);
+    for (int i = 0; i < ArraySize(arr); i++) {
+        if (ArraySize(newArr) <= 0) {
+            ArrayResize(newArr, 1);
+            newArr[0][0] = arr[i];
+            newArr[0][1] = 1;
+        } else {
+            bool added = false;
+            for (int j = (ArraySize(newArr)/2)-1; j >= 0; j--) {
+                if (pricesTOpoint(newArr[j][0], arr[i]) <= pPoint) {
+                    newArr[j][0] = (newArr[j][0] + arr[i])/2;
+                    newArr[j][1] += 1;
+                    added = true;
+                    break;
+                }
+            }
+            if (!added) {
+                int ssize = ArraySize(newArr)/2;
+                ArrayResize(newArr, ssize+1);
+                newArr[ssize][0] = arr[i];
+                newArr[ssize][1] = 1; 
+            } else {
+                int ssize = ArraySize(newArr)/2;
+                if (ssize >= 2) {
+                    for (int j = ssize-2; j >= 0; j--) {
+                        if (pricesTOpoint(newArr[ssize-1][0], newArr[j][0]) <= 100) {
+                            newArr[j][0] = (newArr[ssize-1][0] + newArr[j][0])/2;
+                            newArr[j][1] += newArr[ssize-1][1];
+                            ArrayRemove(newArr, ssize-1, 1);
+                            break;
+                        }
+                    }
+                }
+            } 
+        }
+    } 
+}
+void reducedLines(DotRange& arr, STRUCT_RECT_AND_CENTER &newArr[], uint pPoint) {
+    ArrayResize(newArr, 0);
+    for (int i = 0; i < arr.Total(); i++) {
+        if (ArraySize(newArr) <= 0) {
+            ArrayResize(newArr, 1);
+            newArr[0].top = arr[i];
+            newArr[0].bot = arr[i];
+            newArr[0].center = arr[i].price;
+            newArr[0].count = 1;
+        } else {
+            bool added = false;
+            for (int j = ArraySize(newArr)-1; j >= 0; j--) {
+                if (pricesTOpoint(newArr[j].center, arr[i].price) <= pPoint) {
+                    if (arr[i].price > newArr[j].top.price) newArr[j].top.price = arr[i].price;
+                    else if (arr[i].price < newArr[j].bot.price) newArr[j].bot.price = arr[i].price;
+                    if (arr[i].time < newArr[j].top.time) newArr[j].top.time = arr[i].time;
+                    else if (arr[i].time > newArr[j].bot.time) newArr[j].bot.time = arr[i].time;
+                    newArr[j].center = (newArr[j].center + arr[i].price)/2;
+                    newArr[0].count += 1;
+                    added = true;
+                    break;
+                }
+            }
+            if (!added) {
+                int ssize = ArraySize(newArr);
+                ArrayResize(newArr, ssize+1);
+                newArr[ssize].top = arr[i];
+                newArr[ssize].bot = arr[i];
+                newArr[ssize].center = arr[i].price;
+                newArr[ssize].count = 1;
+            } else {
+                int ssize = ArraySize(newArr);
+                if (ssize >= 2) {
+                    for (int j = ssize-2; j >= 0; j--) {
+                        if (pricesTOpoint(newArr[ssize-1].center, newArr[j].center) <= 100) {
+                            if (newArr[ssize-1].top.price > newArr[j].top.price) newArr[j].top.price = newArr[ssize-1].top.price;
+                            else if (newArr[ssize-1].bot.price < newArr[j].bot.price) newArr[j].bot.price = newArr[ssize-1].bot.price;
+                            if (newArr[ssize-1].top.time < newArr[j].top.time) newArr[j].top.time = newArr[ssize-1].top.time;
+                            else if (newArr[ssize-1].bot.time > newArr[j].bot.time) newArr[j].bot.time = newArr[ssize-1].bot.time;
+                            newArr[j].center = (newArr[ssize-1].center + newArr[j].center)/2;
+                            newArr[j].count += newArr[ssize-1].count;
+                            ArrayRemove(newArr, ssize-1, 1);
+                            break;
+                        }
+                    }
+                }
+            } 
+        }
+    } 
 }
