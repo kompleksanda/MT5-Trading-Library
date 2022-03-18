@@ -442,11 +442,18 @@ class ObjectManager {
     
 };
 
-void drawChartWaveAsThickSR (DotRange& _CW, double relPrice, uint closeness) {
+void drawChartWaveAsThickSR(DotRange& _CW, double relPrice, uint closeness) {
     double _S[];
     double _R[];
     chartWaveToSR(_CW, relPrice, _S, _R);
     drawHlinesAsThick(_S, _R, closeness);
+}
+void drawChartWaveAsSR(DotRange& _CW, double relPrice) {
+    double _S[];
+    double _R[];
+    chartWaveToSR(_CW, relPrice, _S, _R);
+    drawHlines(_S, "SRsupport", clrBlue);
+    drawHlines(_R, "SRresistance", clrRed);
 }
 void drawHlines(double &pPrices[], hLine* &pLines[], string prefix, color pColor = clrRed, uint width = 1) {
     deletePointerArr(pLines);
@@ -613,7 +620,7 @@ void drawDoubleChartPattern(DotRange* _startD, string prefix = "channelD", int _
 void drawLinesDotRange(DotRange* wave, string prefix="chartWave", color pColor = clrRed, long _cID = 0, int _wID = 0) {
     if (!DO_NOT_DRAW_CW) {
         ObjectsDeleteAll(_cID, prefix);
-        if (wave.Total() < 2) return;
+        if (wave == NULL || wave.Total() < 2) return;
         //Causes memory issues in long run
         tLine* tt;
         for (int i = 1; i < wave.Total(); i++) {
@@ -625,7 +632,7 @@ void drawLinesDotRange(DotRange* wave, string prefix="chartWave", color pColor =
 void drawLinesDotRange(tLine* &lines[], DotRange* wave, string prefix="chartWave", color pColor = clrRed, long _cID = 0, int _wID = 0) {
     if (!DO_NOT_DRAW_CW) {
         deletePointerArr(lines);
-        if (wave.Total() < 2) return;
+        if (wave == NULL || wave.Total() < 2) return;
         for (int i = 1; i < wave.Total(); i++) {
             tLine* tt = new tLine(prefix+IntegerToString(i), wave[i-1], wave[i]);
             tt.Color(pColor);

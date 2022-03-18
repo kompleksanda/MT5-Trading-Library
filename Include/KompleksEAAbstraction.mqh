@@ -3339,7 +3339,7 @@ class MarketStructureManager :public CandleManager {
         //drawSymbolsDotRange(sH, OBJ_ARROW_SELL, "sdfsds");
         //drawSymbolsDotRange(sL, OBJ_ARROW_BUY, "fgewf");
         
-        return dotRangesToWave(sH, sL, -1, 1);
+        return dotRangesToWave(sH, sL, pPickMode, pMaxUnturn);
     }
     void MarketStructureManager::getChartWave(DotRange* HighMapBuffer, DotRange* LowMapBuffer, DotRange* ZigZagBuffer, int totBars = 200,
             int inpDepth = 12, int inpDeviation = 5, int inpBackstep = 3, string mode = "HL", DotRange* pPR = NULL) {
@@ -5252,8 +5252,8 @@ class SignalOut {
         DotRange* dRR = dR.slice(-5, 4);
         DotRange* dRR2 = dR2.slice(-5, 4);
         
-        drawChannel4DotRange(SR, dRR, "ranger", true, 3);
-        drawChannel4DotRange(SR2, dRR2, "dranger", true, 1);
+        drawChannel4DotWave(SR, dRR, "ranger", true, 3);
+        drawChannel4DotWave(SR2, dRR2, "dranger", true, 1);
         
         ENUM_SIGNAL e11 = sIn.PApriceCrossTrendLine(upStatus, SR[0], false, true, 0);
         ENUM_SIGNAL e12 = sIn.PApriceCrossTrendLine(downStatus, SR[1], false, true, 0);
