@@ -496,6 +496,8 @@ void drawThickHlines(double& pPrices[][2], hLine* &pLines[], string prefix, colo
             hhl.Color(pColor);
             hhl.Width((int)pPrices[i][1]);
             addToArr(pLines, hhl);
+            
+            //rectangle rect12 = new rectangle(prefix+IntegerToString(i), Dot())
         }
     }
 }

@@ -1312,6 +1312,26 @@ class DotRange : public CArrayObj {
         countRange.Add(_count);
         return Add(dot);
     }
+    bool DotRange::insertWithCount(Dot* dot, int pos) {
+        if (dot != NULL) {
+            priceRange.Insert(dot.price, pos);
+            dateRange.Insert((uint)dot.time, pos);
+        } else {
+            priceRange.Insert(0, pos);
+            dateRange.Insert(0, pos);
+        }
+        if (countRange.Total() > 0) {
+            //countRange.Add(countRange.Total());
+            countRange.Insert(countRange.At(Total()-1)+1, pos);
+        } else countRange.Insert(0, pos);
+        return Insert(dot, pos);
+    }
+    bool DotRange::insertWithCount(Dot* dot, int _count, int pos) {
+        priceRange.Insert(dot.price, pos);
+        dateRange.Insert((uint)dot.time, pos);
+        countRange.Insert(_count, pos);
+        return Insert(dot, pos);
+    }
     DotRange* swingHighs(void) {
         PriceRange* newPr = new PriceRange();
         DateRange* newDr = new DateRange();
