@@ -2153,7 +2153,13 @@ class DotRange : public CArrayObj {
         }
         return false;
     }
-    bool last3LinesUp(double _dev = 5) {return lineLinesUp3(-3, -2, -1);}
+    bool lastLinesLineUp(int pNum = 3, double _dev = 5) {
+        if (pNum < 2) return false;
+        if (pNum == 2) return true;
+        bool res = true;
+        for (int i = 0; i < pNum - 2; i++) res = res && lineLinesUp3(-pNum+i, -pNum+(i+1), -pNum+(i+2), _dev);
+        return res;
+    }
 };
 
 // Price Managers

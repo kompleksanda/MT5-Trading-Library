@@ -734,55 +734,54 @@ void drawTlineOnDotRangeIndex(DotRange& _dR, int _p2 = -3, int _p1 = -1, string 
     tL.Width(_width);
     tL.RayRight(ray);
 }
-void drawTopTlineonChartLine(DotRange& _dR, DotRange* _top) {
+void drawTopTlineonChartLine(DotRange& _dR, DotRange* _top, int pNum = 3, double _dev = 5) {
     if (_dR.chartWaveDirection() == 1) _top = _top.slice(0, _top.Total()-1);
-    if (_top.last3LinesUp()) drawTlineOnDotRangeIndex(_top, -3, -1, "TopTCL", clrRed);
+    if (_top.lastLinesLineUp(pNum, _dev)) drawTlineOnDotRangeIndex(_top, -pNum, -1, "TopTCL", clrRed);
 }
-void drawBotTlineonChartLine(DotRange& _dR, DotRange* _bot) {
+void drawBotTlineonChartLine(DotRange& _dR, DotRange* _bot, int pNum = 3, double _dev = 5) {
     if (_dR.chartWaveDirection() == -1) _bot = _bot.slice(0, _bot.Total()-1);
-    if (_bot.last3LinesUp()) drawTlineOnDotRangeIndex(_bot, -3, -1, "BotTCL", clrBlue);
+    if (_bot.lastLinesLineUp(pNum, _dev)) drawTlineOnDotRangeIndex(_bot, -pNum, -1, "BotTCL", clrBlue);
 }
-void drawTopBotTlineonChartLine(DotRange& _dR, DotRange* _top, DotRange* _bot) {
+void drawTopBotTlineonChartLine(DotRange& _dR, DotRange* _top, DotRange* _bot, int pNum = 3, double _dev = 5) {
     bool topLined = false, botLined = false;
     if (_dR.chartWaveDirection() == 1) _top = _top.slice(0, _top.Total()-1);
     else _bot = _bot.slice(0, _bot.Total()-1);
-    if (_top.last3LinesUp()) {
-        ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_top[-3].time));
-        drawTlineOnDotRangeIndex(_top, -3, -1, "TopTCL", clrRed);
+    if (_top.lastLinesLineUp(pNum, _dev)) {
+        ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_top[-pNum].time));
+        drawTlineOnDotRangeIndex(_top, -pNum, -1, "TopTCL", clrRed);
         topLined = true;
     }
-    if (_bot.last3LinesUp()) {
+    if (_bot.lastLinesLineUp(pNum, _dev)) {
         ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_bot[-3].time));
-        drawTlineOnDotRangeIndex(_bot, -3, -1, "BotTCL", clrBlue);
+        drawTlineOnDotRangeIndex(_bot, -pNum, -1, "BotTCL", clrBlue);
         botLined = true;
         if (!topLined) {
             ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_top[-3].time));
-            drawTlineOnDotRangeIndex(_top, -2, -1, "TempTCL", clrCyan);
+            drawTlineOnDotRangeIndex(_top, -pNum+1, -1, "TempTCL", clrCyan);
         }
     }
     if (topLined && !botLined) {
         ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_bot[-3].time));
-        drawTlineOnDotRangeIndex(_bot, -2, -1, "TempTCL", clrCyan);
+        drawTlineOnDotRangeIndex(_bot, -pNum+1, -1, "TempTCL", clrCyan);
     }
 }
-void drawTopBotTlineonChartLine(DotRange& _dR) {
-    bool topLined = false, botLined = false;
+void drawTopBotTlineonChartLine(DotRange& _dR, int pNum = 3, double _dev = 5) {
     DotRange* _top = new DotRange;
     DotRange* _bot = new DotRange;
     _dR.separateWave(_top, _bot);
-    drawTopBotTlineonChartLine(_dR, _top, _bot);
+    drawTopBotTlineonChartLine(_dR, _top, _bot, pNum, _dev);
 }
-void drawTopBotTlineonChartLine2(DotRange& _dR) {
+void drawTopBotTlineonChartLine2(DotRange& _dR, int pNum = 3, double _dev = 5) {
     DotRange* _top = new DotRange;
     DotRange* _bot = new DotRange;
     _dR.separateWave(_top, _bot);
-    for (int i = 0; i < _top.Total() - 3; i++) {
-        DotRange* lastSlice = _top.slice(i, 4);
-        if (lastSlice.last3LinesUp()) drawTlineOnDotRangeIndex(lastSlice, -3, -1, "TopTCL", clrRed);
+    for (int i = 0; i < _top.Total() - pNum; i++) {
+        DotRange* lastSlice = _top.slice(i, pNum+1);
+        if (lastSlice.lastLinesLineUp(pNum, _dev)) drawTlineOnDotRangeIndex(lastSlice, -pNum, -1, "TopTCL", clrRed);
     }
-    for (int i = 0; i < _bot.Total() - 3; i++) {
-        DotRange* lastSlice = _bot.slice(i, 4);
-        if (lastSlice.last3LinesUp()) drawTlineOnDotRangeIndex(lastSlice, -3, -1, "BotTCL", clrBlue);
+    for (int i = 0; i < _bot.Total() - pNum; i++) {
+        DotRange* lastSlice = _bot.slice(i, pNum+1);
+        if (lastSlice.lastLinesLineUp(pNum, _dev)) drawTlineOnDotRangeIndex(lastSlice, -pNum, -1, "BotTCL", clrBlue);
     }
 }
 class ChartManager: public CChart {
