@@ -2819,7 +2819,7 @@ void reducedLines(double& arr[], double& newArr[][2], uint pPoint) {
                 int ssize = ArraySize(newArr)/2;
                 if (ssize >= 2) {
                     for (int j = ssize-2; j >= 0; j--) {
-                        if (pricesTOpoint(newArr[ssize-1][0], newArr[j][0]) <= 100) {
+                        if (pricesTOpoint(newArr[ssize-1][0], newArr[j][0]) <= pPoint) {
                             newArr[j][0] = (newArr[ssize-1][0] + newArr[j][0])/2;
                             newArr[j][1] += newArr[ssize-1][1];
                             ArrayRemove(newArr, ssize-1, 1);
@@ -2865,7 +2865,7 @@ void reducedLines(DotRange& arr, STRUCT_RECT_AND_CENTER &newArr[], uint pPoint) 
                 int ssize = ArraySize(newArr);
                 if (ssize >= 2) {
                     for (int j = ssize-2; j >= 0; j--) {
-                        if (pricesTOpoint(newArr[ssize-1].center, newArr[j].center) <= 100) {
+                        if (pricesTOpoint(newArr[ssize-1].center, newArr[j].center) <= pPoint) {
                             if (newArr[ssize-1].top.price > newArr[j].top.price) newArr[j].top.price = newArr[ssize-1].top.price;
                             else if (newArr[ssize-1].bot.price < newArr[j].bot.price) newArr[j].bot.price = newArr[ssize-1].bot.price;
                             if (newArr[ssize-1].top.time < newArr[j].top.time) newArr[j].top.time = newArr[ssize-1].top.time;
@@ -2879,5 +2879,9 @@ void reducedLines(DotRange& arr, STRUCT_RECT_AND_CENTER &newArr[], uint pPoint) 
                 }
             } 
         }
-    } 
+    }
+    for (int i = 0; i < ArraySize(newArr); i++) {
+        if (newArr[i].top.eq(newArr[i].bot)) newArr[i].top.price += _Point;
+        newArr[i].bot.time = TimeCurrent()+3600*4;
+    }
 }
