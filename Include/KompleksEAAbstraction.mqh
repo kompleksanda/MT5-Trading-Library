@@ -4745,14 +4745,14 @@ class SignalIn {
             int inpBackstep = 3, bool invert = false, bool multiMode = false) {
         return PAtradeCPIf(cMan.getChartWave(_days, inpDepth, inpDeviation, inpBackstep), _toSee, _pick, invert, multiMode);
     }
-    ENUM_SIGNAL SignalIn::PAtradeFiboLevels(DotRange* _CW, string level = "50", int _pick = 1, bool invert = false, bool multiMode = false) {
+    ENUM_SIGNAL SignalIn::PAtradeFiboLevels(DotRange* _CW, string level = "50", int _pick = 1, bool invert = false, bool multiMode = false, int line1 = -3, int line2 = -2) {
         if (_CW.Total() < 3) return SIGNAL_UNKNOWN;
         if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         ObjectsDeleteAll(ChartID(), "sdfs");
         static retraceFibo* fasYHJG12s;
         delete fasYHJG12s;
-        if (_CW[-2] > _CW[-3]) fasYHJG12s = new retraceFibo("sdfs", _CW[-3], Dot(_CW[-2].price, cMan.currentDate() + 30 * cMan.interval));
-        else fasYHJG12s = new retraceFibo("sdfs", _CW[-3], Dot(_CW[-2].price, cMan.currentDate() + 30 * cMan.interval));
+        if (_CW[-2] > _CW[-3]) fasYHJG12s = new retraceFibo("sdfs", _CW[line1], Dot(_CW[line2].price, cMan.currentDate() + 30 * cMan.interval));
+        else fasYHJG12s = new retraceFibo("sdfs", _CW[line1], Dot(_CW[line2].price, cMan.currentDate() + 30 * cMan.interval));
         fasYHJG12s.Color(clrYellow);
         if (!ANALYSIS) {
             int disFromLevel = (int)pricesTOpoint(fasYHJG12s.valueAt(level), cMan.currentBid());
