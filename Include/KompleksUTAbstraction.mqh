@@ -2891,3 +2891,29 @@ void reducedLines(DotRange& arr, STRUCT_RECT_AND_CENTER &newArr[], uint pPoint) 
         newArr[i].bot.time = TimeCurrent()+3600*4;
     }
 }
+
+class Calendar {
+    protected:
+    string COUNTRY;
+    public:
+    Calendar(string pCountry) {
+        COUNTRY = pCountry;
+    }
+    void Calendar::getEvents() {
+        MqlCalendarEvent events[];
+        int event_count = CalendarEventByCountry(COUNTRY, events);
+        if (event_count < 0) {
+            Print("No event");
+        } else {
+            MqlCalendarEvent event;
+            ulong event_id = events[0].id;
+            if (CalendarEventById(event_id, event)) {
+               MqlCalendarCountry country;
+               CalendarCountryById(event.country_id, country);
+               PrintFormat("Event name: %s", event.name);
+               PrintFormat("Event importance: %s", EnumToString((ENUM_CALENDAR_EVENT_IMPORTANCE)event.importance));
+               Print(EnumToString((ENUM_CALENDAR_EVENT_TIMEMODE)event.time_mode));
+            }
+        }
+    }
+};

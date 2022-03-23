@@ -174,7 +174,7 @@ class BBmanager : public CiBands{
 class MACDmanager : public CiMACD {
     public:
     CandleManager* cMan;
-    MACDmanager::MACDmanager(int fastPeriod, int slowPeriod, int sigPeriod, int pApp, CandleManager& _cMan, ENUM_TIMEFRAMES pTimeFrame=PERIOD_CURRENT) {
+    MACDmanager::MACDmanager(int fastPeriod, int slowPeriod, int sigPeriod, int pApp, CandleManager* _cMan, ENUM_TIMEFRAMES pTimeFrame=PERIOD_CURRENT) {
         if (!Create(_Symbol, pTimeFrame, fastPeriod, slowPeriod, sigPeriod, pApp)) {
             if (VERBOSE) Print("Could not create MACD Indicator");
         }
