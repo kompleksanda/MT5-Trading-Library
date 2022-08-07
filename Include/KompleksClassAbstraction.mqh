@@ -95,10 +95,8 @@ class CandleManager : public PriceManager {
         assignCandleTrend(12, cRange, dateToNum(pDate), series);
         return cRange;
     }
-    int CandleManager::datesToCount(datetime date1, datetime date2) {
-        return Bars(_Symbol, timeFrame, date1, date2) - 1;
-        //return (int)(MathAbs(date2 - date1)/interval);
-    }
+    int CandleManager::datesToCount(datetime date1, datetime date2) {return Bars(_Symbol, timeFrame, date1, date2) - 1;}
+    int CandleManager::datesToCount(Dot &dot1, Dot &dot2) {return datesToCount(dot2.time, dot1.time)+1;}
     int CandleManager::dateToNum(datetime date1) {
         //dates are in series
         return datesToCount(date1, currentDate());
@@ -128,7 +126,6 @@ class CandleManager : public PriceManager {
         return new LongRange(tVol);
     }
     long CandleManager::getTickVolume(uint n, bool series = true) {return lastNtickVolume(1, n, series).At(0);}
-    double getDotSlope(Dot &dot2, Dot &dot1) {return getSlope(dot2.price-dot1.price, datesToCount(dot2.time, dot1.time)+1);}
     double getCandlesSlope(Candle& pC, Candle& cC) {return getSlope(cC.close - pC.open, datesToCount(pC.time, cC.time)+1);}
     double getCandlesSlope(uint pRange, uint pShift = 1) {
         Candle* cC = getCandle(pShift);
@@ -137,8 +134,8 @@ class CandleManager : public PriceManager {
         //delete cC; delete pC;
         return ret;
     }
-    double getDotAngle(Dot &dot2, Dot &dot1) {
-        return radToDegrees(MathArctan((dot2.price-dot1.price) / (datesToCount(dot2.time, dot1.time)+1)));
+    double pointPerTime(Dot &dot1, Dot &dot2) {
+        return (double)pricesTOsignedPoint(dot1, dot2) / (datesToCount(dot2.time, dot1.time)+1);
     }
     LongRange* CandleManager::lastNrealVolume(int n, uint pShift = 0, bool series = true) {
         long tVol [];
@@ -3300,7 +3297,34 @@ class RiskProfitManager {
         return true;
     }
 };
+class DotRangee : public DotRange {
+    public:
+    double getLineAngle(CandleManager *_cMan) {
+        if (Total() < 2) return WRONG_VALUE;
+        return _cMan.pointPerTime(A(-2), A(-1));
+    }
+    bool lineLinesUp3(CandleManager *_cMan, int _p3, int _p2, int _p1, double _dev = 5) {
+        if (Total() < 3) return false;
+        double ang1 = _cMan.pointPerTime(A(_p2), A(_p1));
+        double ang2 = _cMan.pointPerTime(A(_p3), A(_p2));
+        if (MathAbs(ang2 - ang1) <= _dev) return true;
+        return false;
+    }
+    bool lastLinesLineUp(CandleManager *_cMan, int pNum = 3, double _dev = 5) {
+        if (pNum < 2) return false;
+        if (pNum == 2) return true;
+        bool res = true;
+        for (int i = 0; i < pNum - 2; i++) res = res && lineLinesUp3(_cMan, -pNum+i, -pNum+(i+1), -pNum+(i+2), _dev);
+        return res;
+    }
+};
+
+
 
 //Functions
-double getChartAngle(CandleManager* _cMan, Dot& dot1, Dot& dot2) {return _cMan.getDotAngle(dot1, dot2);}
-double getChartSlope(CandleManager* _cMan, Dot& dot1, Dot& dot2) {return _cMan.getDotSlope(dot2, dot1);}
+double getChartAngle(CandleManager* _cMan, Dot& dot1, Dot& dot2) {return _cMan.pointPerTime(dot1, dot2);}
+
+
+//DotRangee toDotRangee(DotRange* _dRange) {
+
+//}

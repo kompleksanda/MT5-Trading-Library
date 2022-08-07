@@ -803,7 +803,6 @@ void drawTopBotTlineonChartLine2(DotRange& _dR, int pNum = 3, double _dev = 5, i
     _dR.separateWave(_top, _bot);
     if (_min > 0 && _min < pNum) {
         int i = 0;
-        Print(_top.Total());
         while (i < _top.Total() - _min) {
             int j;
             if (_top.Total() - i > pNum) j = pNum;
@@ -812,7 +811,7 @@ void drawTopBotTlineonChartLine2(DotRange& _dR, int pNum = 3, double _dev = 5, i
                 DotRange* lastSlice = _top.slice(i, k);
                 if (lastSlice.lastLinesLineUp(k, _dev)) {
                     drawTlineOnDotRangeIndex(lastSlice, -k, -1, "TopTCL", clrBlue, true, k-1);
-                    i += k-1;
+                    i += k-2;
                     break;
                 }
             }
@@ -827,7 +826,7 @@ void drawTopBotTlineonChartLine2(DotRange& _dR, int pNum = 3, double _dev = 5, i
                 DotRange* lastSlice = _bot.slice(i, k);
                 if (lastSlice.lastLinesLineUp(k, _dev)) {
                     drawTlineOnDotRangeIndex(lastSlice, -k, -1, "BotTCL", clrRed, true, k-1);
-                    i += k-1;
+                    i += k-2;
                     break;
                 }
             }

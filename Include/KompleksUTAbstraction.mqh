@@ -437,12 +437,10 @@ double pointTOprice(long point, double pPrice, bool invert = false) {
     return pPrice;
 }
 //TODO: change uint to ulong
-uint pricesTOpoint(double pPriceHigh, double pPriceLow) {
-    return (uint)(NormalizeDouble(MathAbs(pPriceHigh - pPriceLow) / _Point, 0));
-}
-uint pricesTOpoint(Dot& dot1, Dot& dot2) {
-    return (uint)(NormalizeDouble(MathAbs(dot1.price - dot2.price) / _Point, 0));
-}
+uint pricesTOpoint(double pPriceHigh, double pPriceLow) {return (uint)(NormalizeDouble(MathAbs(pPriceHigh - pPriceLow) / _Point, 0));}
+uint pricesTOpoint(Dot& dot1, Dot& dot2) {return (uint)(NormalizeDouble(MathAbs(dot1.price - dot2.price) / _Point, 0));}
+int pricesTOsignedPoint(Dot& dot1, Dot& dot2) {return (int)(NormalizeDouble((dot2.price - dot1.price) / _Point, 0));}
+int pricesTOsignedPoint(double pPriceLow, double pPriceHigh) {return (int)(NormalizeDouble((pPriceHigh - pPriceLow) / _Point, 0));}
 uint getSLpointFROM_RRR(double pRRR=0, double pScale=0) {
     if (pScale <= 0) pScale = RR_RATIO_SCALE;
     return (uint)(pScale);
