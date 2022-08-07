@@ -1,8 +1,13 @@
 //+------------------------------------------------------------------+
 //|                                        KompleksCOAbstraction.mqh |
-//|                                                       KompleksEA |
-//|                                        kompleksanda.blogspot.com |
+//|                                       Copyright 2022, KompleksEA |
+//|                            https://www.kompleksanda.blogspot.com |
 //+------------------------------------------------------------------+
+#property copyright "Copyright 2022, KompleksEA"
+#property link      "https://www.kompleksanda.blogspot.com"
+
+#include <MT5TradingLibrary/Include/KompleksUTAbstraction.mqh>
+
 #include  <ChartObjects\ChartObject.mqh>
 #include  <ChartObjects\ChartObjectsLines.mqh>
 #include  <ChartObjects\ChartObjectsChannels.mqh>
@@ -19,9 +24,6 @@
 #include  <Canvas\Charts\HistogramChart.mqh>
 #include  <Canvas\Charts\LineChart.mqh>
 #include  <Canvas\Charts\PieChart.mqh>
-
-#include <MT5TradingLibrary/Include/KompleksUTAbstraction.mqh>
-// Graphical Objects
 
 class vLine : public CChartObjectVLine{
     public:
@@ -378,6 +380,10 @@ class textObject: public CChartObjectText {
     textObject(string pName, Dot &dot1, long pCID = 0, int pWin = 0) {
         Create(pCID, pName, pWin, dot1.time, dot1.price);
     }
+    textObject(string pName, Dot &dot1, string desc, long pCID = 0, int pWin = 0) {
+        Create(pCID, pName, pWin, dot1.time, dot1.price);
+        Description(desc);
+    }
 };
 class labelObject: public CChartObjectLabel {
     public:
@@ -437,11 +443,14 @@ class pieChart : public CPieChart{
     public:
     pieChart(void);
 };
-class ObjectManager {
+class ChartManager: public CChart {
     public:
-    
+    ChartManager::ChartManager(void){
+        Attach();
+    };
 };
 
+// Draw functions
 void drawChartWaveAsSR(DotRange& _CW, double relPrice, uint closeness, bool useLines = true) {
     if (closeness == 0) {
         double _S[];
@@ -635,7 +644,7 @@ void drawChannel4DotWave(tLine* &pSR[], DotRange* _startD, string prefix="channe
         pSR[1].Width(pWidth);
     }
 }
-void drawChannelHeadShoulder(DotRange* _startD, string prefix="channelhs", bool _ray = false, color pTopColor = clrRed, color pBotColor = clrBlue) {
+void drawChannelHeadShoulder(DotRange* _startD, string prefix="channelhs", int _width = 1, bool _ray = false, color pTopColor = clrRed, color pBotColor = clrBlue) {
     if (_startD.Total() >= 7) {
         tLine* _tL;
         Dot* dd;
@@ -648,6 +657,7 @@ void drawChannelHeadShoulder(DotRange* _startD, string prefix="channelhs", bool 
             _tL = new tLine(prefix+"top"+IntegerToString(dd.time), dd, (Dot*)_startD[-3]);
         }
         _tL.Color(pTopColor);
+        _tL.Width(_width);
         _tL.RayRight(_ray);
         if (_trendUp) {
             dd = _startD[-5];
@@ -657,6 +667,7 @@ void drawChannelHeadShoulder(DotRange* _startD, string prefix="channelhs", bool 
             _tL = new tLine(prefix+"bot"+IntegerToString(dd.time), dd, (Dot*)_startD[-2]);
         }
         _tL.Color(pBotColor);
+        _tL.Width(_width);
         _tL.RayRight(_ray);
     }
 }
@@ -729,7 +740,7 @@ void drawSymbolsDotWave(DotRange* wave, string prefix="chartbols", ENUM_OBJECT o
     drawSymbolsDotRange(_bot, objbot, prefix + "bot");
 }
 void drawTlineOnDotRangeIndex(DotRange& _dR, int _p2 = -3, int _p1 = -1, string prefix="TrendChartLine", color pColor = clrRed, bool ray = true, int _width = 1) {
-    tLine* tL = new tLine(prefix+IntegerToString(_dR.A(_p2).time), _dR.A(_p2), _dR.A(_p1));
+    tLine* tL = new tLine(prefix+IntegerToString(MathRand()), _dR.A(_p2), _dR.A(_p1));
     tL.Color(pColor);
     tL.Width(_width);
     tL.RayRight(ray);
@@ -742,54 +753,103 @@ void drawBotTlineonChartLine(DotRange& _dR, DotRange* _bot, int pNum = 3, double
     if (_dR.chartWaveDirection() == -1) _bot = _bot.slice(0, _bot.Total()-1);
     if (_bot.lastLinesLineUp(pNum, _dev)) drawTlineOnDotRangeIndex(_bot, -pNum, -1, "BotTCL", clrBlue);
 }
-void drawTopBotTlineonChartLine(DotRange& _dR, DotRange* _top, DotRange* _bot, int pNum = 3, double _dev = 5) {
+void drawTopBotTlineonChartLine(DotRange& _dR, DotRange* _top, DotRange* _bot, int pNum = 3, double _dev = 5, int _min = 0) {
     bool topLined = false, botLined = false;
     if (_dR.chartWaveDirection() == 1) _top = _top.slice(0, _top.Total()-1);
     else _bot = _bot.slice(0, _bot.Total()-1);
-    if (_top.lastLinesLineUp(pNum, _dev)) {
-        ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_top[-pNum].time));
-        drawTlineOnDotRangeIndex(_top, -pNum, -1, "TopTCL", clrRed);
-        topLined = true;
-    }
-    if (_bot.lastLinesLineUp(pNum, _dev)) {
-        ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_bot[-3].time));
-        drawTlineOnDotRangeIndex(_bot, -pNum, -1, "BotTCL", clrBlue);
-        botLined = true;
-        if (!topLined) {
-            ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_top[-3].time));
-            drawTlineOnDotRangeIndex(_top, -pNum+1, -1, "TempTCL", clrCyan);
+    if (_min > 0 && _min < pNum) {
+        for (int i = pNum; i > _min; i--) {
+            if (_top.lastLinesLineUp(i, _dev)) {
+                drawTlineOnDotRangeIndex(_top, i, -1, "TopTCL", clrRed, true, i-1);
+                break;
+            }
+        }
+        for (int i = pNum; i > _min; i--) {
+            if (_bot.lastLinesLineUp(i, _dev)) {
+                drawTlineOnDotRangeIndex(_bot, -i, -1, "BotTCL", clrBlue, true, i);
+                break;
+            }
+        }
+    } else {
+        if (_top.lastLinesLineUp(pNum, _dev)) {
+            ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_top[-pNum].time));
+            drawTlineOnDotRangeIndex(_top, -pNum, -1, "TopTCL", clrRed);
+            topLined = true;
+        }
+        if (_bot.lastLinesLineUp(pNum, _dev)) {
+            ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_bot[-3].time));
+            drawTlineOnDotRangeIndex(_bot, -pNum, -1, "BotTCL", clrBlue);
+            botLined = true;
+            if (!topLined) {
+                ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_top[-3].time));
+                drawTlineOnDotRangeIndex(_top, -pNum+1, -1, "TempTCL", clrCyan);
+            }
+        }
+        if (topLined && !botLined) {
+            ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_bot[-3].time));
+            drawTlineOnDotRangeIndex(_bot, -pNum+1, -1, "TempTCL", clrCyan);
         }
     }
-    if (topLined && !botLined) {
-        ObjectDelete(ChartID(), "TempTCL"+IntegerToString(_bot[-3].time));
-        drawTlineOnDotRangeIndex(_bot, -pNum+1, -1, "TempTCL", clrCyan);
-    }
 }
-void drawTopBotTlineonChartLine(DotRange& _dR, int pNum = 3, double _dev = 5) {
+void drawTopBotTlineonChartLine(DotRange& _dR, int pNum = 3, double _dev = 5, bool _all = false) {
     DotRange* _top = new DotRange;
     DotRange* _bot = new DotRange;
     _dR.separateWave(_top, _bot);
-    drawTopBotTlineonChartLine(_dR, _top, _bot, pNum, _dev);
+    drawTopBotTlineonChartLine(_dR, _top, _bot, pNum, _dev, _all);
 }
-void drawTopBotTlineonChartLine2(DotRange& _dR, int pNum = 3, double _dev = 5) {
+void drawTopBotTlineonChartLine2(DotRange& _dR, int pNum = 3, double _dev = 5, int _min = 0) {
     DotRange* _top = new DotRange;
     DotRange* _bot = new DotRange;
     _dR.separateWave(_top, _bot);
-    for (int i = 0; i < _top.Total() - pNum; i++) {
-        DotRange* lastSlice = _top.slice(i, pNum+1);
-        if (lastSlice.lastLinesLineUp(pNum, _dev)) drawTlineOnDotRangeIndex(lastSlice, -pNum, -1, "TopTCL", clrRed);
-    }
-    for (int i = 0; i < _bot.Total() - pNum; i++) {
-        DotRange* lastSlice = _bot.slice(i, pNum+1);
-        if (lastSlice.lastLinesLineUp(pNum, _dev)) drawTlineOnDotRangeIndex(lastSlice, -pNum, -1, "BotTCL", clrBlue);
+    if (_min > 0 && _min < pNum) {
+        int i = 0;
+        Print(_top.Total());
+        while (i < _top.Total() - _min) {
+            int j;
+            if (_top.Total() - i > pNum) j = pNum;
+            else j = _top.Total() - i;
+            for (int k = j; k > _min; k--) {
+                DotRange* lastSlice = _top.slice(i, k);
+                if (lastSlice.lastLinesLineUp(k, _dev)) {
+                    drawTlineOnDotRangeIndex(lastSlice, -k, -1, "TopTCL", clrBlue, true, k-1);
+                    i += k-1;
+                    break;
+                }
+            }
+            i += 1;
+        }
+        i = 0;
+        while (i < _bot.Total() - _min) {
+            int j;
+            if (_bot.Total() - i > pNum) j = pNum;
+            else j = _bot.Total() - i;
+            for (int k = j; k > _min; k--) {
+                DotRange* lastSlice = _bot.slice(i, k);
+                if (lastSlice.lastLinesLineUp(k, _dev)) {
+                    drawTlineOnDotRangeIndex(lastSlice, -k, -1, "BotTCL", clrRed, true, k-1);
+                    i += k-1;
+                    break;
+                }
+            }
+            i += 1;
+        }
+    } else {
+        for (int i = 0; i < _top.Total() - pNum; i++) {
+            DotRange* lastSlice = _top.slice(i, pNum+1);
+            if (lastSlice.lastLinesLineUp(pNum, _dev)) drawTlineOnDotRangeIndex(lastSlice, -pNum, -1, "TopTCL", clrRed);
+        }
+        for (int i = 0; i < _bot.Total() - pNum; i++) {
+            DotRange* lastSlice = _bot.slice(i, pNum+1);
+            if (lastSlice.lastLinesLineUp(pNum, _dev)) drawTlineOnDotRangeIndex(lastSlice, -pNum, -1, "BotTCL", clrBlue);
+        }
     }
 }
-class ChartManager: public CChart {
-    public:
-    ChartManager::ChartManager(void){
-        Attach();
-    };
-};
+double getNearestPrice(double pPrice, hLine* &pLines[]) {
+    double retPrice[];
+    ArrayResize(retPrice, ArraySize(pLines));
+    for (int i = 0; i < ArraySize(pLines); i++) retPrice[i] = pLines[i].Price(0);
+    return getNearestPrice(pPrice, retPrice);
+}
 void checkChartManager(ChartManager* &_cMM) {
     if (_cMM == NULL) _cMM = new ChartManager;
 }

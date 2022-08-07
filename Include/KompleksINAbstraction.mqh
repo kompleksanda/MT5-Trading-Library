@@ -1,9 +1,13 @@
 //+------------------------------------------------------------------+
 //|                                        KompleksINAbstraction.mqh |
-//|                                                       KompleksEA |
-//|                                        kompleksanda.blogspot.com |
+//|                                       Copyright 2022, KompleksEA |
+//|                            https://www.kompleksanda.blogspot.com |
 //+------------------------------------------------------------------+
-#include <MT5TradingLibrary/Include/KompleksEAAbstraction.mqh>
+#property copyright "Copyright 2022, KompleksEA"
+#property link      "https://www.kompleksanda.blogspot.com"
+
+#include <MT5TradingLibrary/Include/KompleksClassAbstraction.mqh>
+
 #include <Indicators\Trend.mqh>
 #include <Indicators\Oscilators.mqh>
 #include <Indicators\BillWilliams.mqh>

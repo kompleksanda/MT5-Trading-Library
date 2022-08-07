@@ -1,14 +1,23 @@
 //+------------------------------------------------------------------+
 //|                                        KompleksUTAbstraction.mqh |
-//|                                                       KompleksEA |
-//|                                        kompleksanda.blogspot.com |
+//|                                       Copyright 2022, KompleksEA |
+//|                            https://www.kompleksanda.blogspot.com |
 //+------------------------------------------------------------------+
+#property copyright "Copyright 2022, KompleksEA"
+#property link      "https://www.kompleksanda.blogspot.com"
+
 #include <Arrays\ArrayDouble.mqh>
 #include <Arrays\ArrayLong.mqh>
 #include <Arrays\ArrayInt.mqh>
 #include <Arrays\ArrayObj.mqh>
 
-#resource "\\Files\\Sounds\\b_notification.wav";
+#include <Trade\AccountInfo.mqh>
+#include <Trade\SymbolInfo.mqh>
+#include <Trade\TerminalInfo.mqh>
+#include <Trade\DealInfo.mqh>
+#include <Trade\HistoryOrderInfo.mqh>
+
+//#resource "\\Files\\Sounds\\b_notification.wav";
 
 #define  MAX_RETRIES 3 //Maximum retries
 #define  RETRY_DELAY 2000 //Retry delay
@@ -2146,11 +2155,12 @@ class DotRange : public CArrayObj {
         if (Total() < 3) return false;
         double ang1 = getChartAngle(A(_p2), A(_p1));
         double ang2 = getChartAngle(A(_p3), A(_p2));
-        if ((ang1 > 0 && ang2 < 0) || (ang1 < 0 && ang2 > 0)) {
-            if (MathAbs(ang1) + MathAbs(ang2) <= _dev*2) return (Total() == 3) ? false : true;
-        } else {
-            if (MathAbs(MathAbs(ang1) - MathAbs(ang2)) <= _dev) return (Total() == 3) ? false : true;
-        }
+        //if ((ang1 > 0 && ang2 < 0) || (ang1 < 0 && ang2 > 0)) {
+        //    if (MathAbs(ang1) + MathAbs(ang2) <= _dev*2) return (Total() == 3) ? false : true;
+        //} else {
+        //    if (MathAbs(MathAbs(ang1) - MathAbs(ang2)) <= _dev) return (Total() == 3) ? false : true;
+        //}
+        if (MathAbs(ang2 - ang1) <= _dev) return true;
         return false;
     }
     bool lastLinesLineUp(int pNum = 3, double _dev = 5) {
@@ -2892,6 +2902,7 @@ void reducedLines(DotRange& arr, STRUCT_RECT_AND_CENTER &newArr[], uint pPoint) 
     }
 }
 
+// CALENDAR
 class Calendar {
     protected:
     string COUNTRY;
@@ -2915,5 +2926,266 @@ class Calendar {
                Print(EnumToString((ENUM_CALENDAR_EVENT_TIMEMODE)event.time_mode));
             }
         }
+    }
+};
+
+// MONEY
+class SymbolManager : public CSymbolInfo {
+    public:
+    SymbolManager (void) {
+        Name(_Symbol);
+    }
+};
+class TerminalManager : public CTerminalInfo {
+    public:
+    TerminalManager (void);
+};
+
+class AccountManager : public CAccountInfo {
+    public:
+    AccountManager(void) {};
+    double AccountManager::MarginCheck(ENUM_ORDER_TYPE pType, double pPrice, double pVol) {
+        return CAccountInfo::MarginCheck(_Symbol, pType, pVol, pPrice);
+    }
+    double AccountManager::OrderProfitCheck(ENUM_ORDER_TYPE pType, double pOpen, double pClose, double pVol = 1) {
+        return CAccountInfo::OrderProfitCheck(_Symbol, pType, pVol, pOpen, pClose);
+    }
+    double AccountManager::EBratio(void) {
+        return Equity()/Balance();
+    }
+    double AccountManager::balanceChanged(void) {
+        static double prevBalance = Balance();
+        double cBal = Balance();
+        if (prevBalance != cBal) {
+            double pDiff = cBal - prevBalance;
+            prevBalance = cBal;
+            return pDiff;
+        }
+        return 0;
+    }
+    double AccountManager::balanceChanged(double pBal) {return Balance() - pBal;}
+    double dollarToLot(ENUM_ORDER_TYPE orderType, double pPrice, double fixedAmount) {
+        return verifyVolume(MaxLotCheck(_Symbol, orderType, pPrice, (fixedAmount*100)/FreeMargin()));
+    }
+};
+class MoneyManager {
+    private:
+    AccountManager* aMan;
+    SymbolManager* sMan;
+    double martingalePercent;
+    public:
+    MoneyManager(AccountManager* aMMan, SymbolManager* sMMan) {
+        aMan = aMMan;
+        sMan = sMMan;
+        martingalePercent = MONEY_RISK_BALANCE_PERCENTAGE;
+    }
+    double MoneyManager::getVolume(uint pPoints = 0) {
+        switch(MONEY_MANAGEMENT_MODE) {
+            case MONEY_MANAGEMENT_FIXED:
+                return fixedVolume();
+            case MONEY_MANAGEMENT_BALANCE_PERCENTAGE:
+                return balancePercentage(MONEY_RISK_BALANCE_PERCENTAGE, pPoints);
+            case MONEY_MANAGEMENT_MARTINGALE:
+                return balancePercentage(martingalePercent, pPoints);
+            default:
+                return fixedVolume();
+        }
+    }
+    double balancePercentage(double pPercent, uint pStopPoints = 0) {
+        if(pPercent > 0) {
+            if(pPercent > MONEY_RISK_BALANCE_PERCENTAGE) pPercent = MONEY_RISK_BALANCE_PERCENTAGE;
+            if (pStopPoints <= 0) pStopPoints = RR_RATIO_SCALE;
+            return verifyVolume(((aMan.Balance()*(pPercent/100))/pStopPoints)/sMan.TickValue());
+        }
+        return 0;
+    }
+    double fixedVolume(double pFixedVol = 0) {
+        if (pFixedVol <= 0) pFixedVol = MONEY_RISK_FIXED;
+        return verifyVolume(pFixedVol);
+    }
+    void changeMartingale(double lastProfit) {
+        if (lastProfit > 0) martingalePercent += MONEY_MANAGEMENT_MARTINGALE_CHANGE_PERCENTAGE;
+        else if (lastProfit < 0) martingalePercent -= MONEY_MANAGEMENT_MARTINGALE_CHANGE_PERCENTAGE;
+    }
+};
+
+//CANDLE
+class Candle : public CObject {
+    private:
+    int Candle::_bodyPointSign(void) {
+        if (type == CANDLE_TYPE_BULL)
+            return (int)pricesTOpoint(close, open);
+        if (type == CANDLE_TYPE_BEAR)
+            return -(int)pricesTOpoint(open, close);
+        return 0;
+    }
+    uint Candle::_upWickPoint(void) {
+        if (type == CANDLE_TYPE_BULL) {
+            if (high == close) return 0;
+            return pricesTOpoint(high, close);
+        } else if (type == CANDLE_TYPE_BEAR) {
+            if (high == open) return 0;
+            return pricesTOpoint(high, open);
+        } else if (type == CANDLE_TYPE_DASH) return 0;
+        return pricesTOpoint(high, open);
+    }
+    uint Candle::_downWickPoint (void) {
+        if (type == CANDLE_TYPE_BULL) {
+            if (open == low) return 0;
+            return pricesTOpoint(open, low);
+        } else if (type == CANDLE_TYPE_BEAR) {
+            if (close == low) return 0;
+            return pricesTOpoint(close, low);
+        } else if (type == CANDLE_TYPE_DASH) return 0;
+        return pricesTOpoint(close, low);
+    }
+    ENUM_CANDLE_CAT Candle::_getCategory(void) {
+        if (type == CANDLE_TYPE_DASH) return CANDLE_CAT_DASH;
+        //else if (type == CANDLE_TYPE_DOJI) return CANDLE_CAT_DOJI;
+        
+        double bodyPer = ((double)bodyPoint/lengthPoint) * 100;
+        double upWickPer = ((double)upWickPoint/lengthPoint) * 100;
+        double downWickPer = ((double)downWickPoint/lengthPoint) * 100;
+        double wickPer = upWickPer + downWickPer;
+        
+        if (bodyPer < 62) {
+            if (bodyPer <= 15) {
+                if (bodyPer <= 12 && MathAbs(upWickPer - downWickPer) <= 5) return CANDLE_CAT_DOJI;
+                if (upWickPer <= 10) return CANDLE_CAT_HAMMER;
+                if (downWickPer <= 10) return CANDLE_CAT_INVHAMMER;
+            }
+        } else if (bodyPer > 90) return CANDLE_CAT_MARIBOZU;
+        if (upWickPer > bodyPer && downWickPer > bodyPer) return CANDLE_CAT_SPINNINGTOP;
+        if (type == CANDLE_TYPE_BEAR) return CANDLE_CAT_BEAR;
+        else if (type == CANDLE_TYPE_BULL) return CANDLE_CAT_BULL;
+        return CANDLE_CAT_DOJI;
+    }
+    ENUM_CANDLE_TYPE Candle::_getType(void) {
+        if (lengthPoint == 0) return CANDLE_TYPE_DASH;
+        else if (bodyPoint < lengthPoint*0.03) return CANDLE_TYPE_DOJI;
+        if (open < close) return CANDLE_TYPE_BULL;
+        else if (open > close) return CANDLE_TYPE_BEAR;
+        return CANDLE_TYPE_DOJI;
+    }
+    void Candle::_prepare(void) {
+        lengthPoint = pricesTOpoint(high, low);
+        bodyPoint = pricesTOpoint(close, open);
+        type = _getType();
+        trendType = TREND_TYPE_NOTREND;
+        lengthType = CANDLE_LENGTH_NORMAL;
+        bodyPointSign = _bodyPointSign();
+        upWickPoint = _upWickPoint();
+        downWickPoint = _downWickPoint();
+        category = _getCategory();
+    }
+    
+    public:
+    datetime time;
+    double open;
+    double high;
+    double low;
+    double close;
+    long tickVolume;
+    int spread;
+    long realVolume;
+    ENUM_CANDLE_TYPE type;
+    ENUM_CANDLE_CAT category;
+    ENUM_TREND_TYPE trendType;
+    ENUM_CANDLE_LENGHT lengthType;
+    uint lengthPoint;
+    uint bodyPoint;
+    uint bodyPointSign;
+    uint upWickPoint;
+    uint downWickPoint;
+    Candle (MqlRates &pRate) {
+        time = pRate.time;
+        open = NormalizeDouble(pRate.open, _Digits);
+        high = NormalizeDouble(pRate.high, _Digits);
+        low = NormalizeDouble(pRate.low, _Digits);
+        close = NormalizeDouble(pRate.close, _Digits);
+        tickVolume = pRate.tick_volume;
+        spread = pRate.spread;
+        realVolume = pRate.real_volume;
+        _prepare();
+    }
+    Candle (double pOpen, double pHigh, double pLow, double pClose, long pRealVolume,
+            long pTickVolume, datetime pTime, int pSpread) {
+        time = pTime;
+        open = pOpen;
+        high = pHigh;
+        low = pLow;
+        close = pClose;
+        tickVolume = pTickVolume;
+        spread = pSpread;
+        realVolume = pRealVolume;
+        _prepare();
+    }
+    bool lengthWithin(Candle* candle) {
+        if (low < candle.low || high > candle.high) return false;
+        return true;
+    }
+    bool bodyWithin(Candle* candle) {
+        double thisMin = MathMin(close, open);
+        double thisMax = MathMax(close, open);
+        double thatMin = MathMin(candle.close, candle.open);
+        double thatMax = MathMax(candle.close, candle.open);
+        if (thisMin < thatMin || thisMax > thatMax) return false;
+        return true;
+    }
+    bool bodyWithin2(Candle* candle, double perDiff = 10, string onWhat = "BOTH") {
+        double thisMin = MathMin(close, open);
+        double thisMax = MathMax(close, open);
+        double thatMin = MathMin(candle.close, candle.open);
+        double thatMax = MathMax(candle.close, candle.open);
+        uint lBody = MathMax(bodyPoint, candle.bodyPoint);
+        if (onWhat == "BOTH") {
+            if ((pricesTOpoint(thisMin, thatMin) > (uint)(lBody*(perDiff/100))) || (pricesTOpoint(thisMax, thatMax) > (uint)(lBody*(perDiff/100)))) return false;
+        } else if (onWhat == "TOP") {
+            if (pricesTOpoint(thisMax, thatMax) > (uint)(lBody*(perDiff/100))) return false;
+        } else if (onWhat == "BOT") {
+            if (pricesTOpoint(thisMin, thatMin) > (uint)(lBody*(perDiff/100))) return false;
+        }
+        return true;
+    }
+    bool bodyOverlap(Candle* candle) {
+        double thisMin = MathMin(close, open);
+        double thisMax = MathMax(close, open);
+        double thatMin = MathMin(candle.close, candle.open);
+        double thatMax = MathMax(candle.close, candle.open);
+        if (thisMin <= thatMax) {
+            if (thisMax >= thatMax) return true;
+            else if (thisMax >= thatMin) return true;
+        }
+        return false;
+    }
+};
+class CandleRange : public CArrayObj {
+    public:
+    CandleRange::CandleRange(MqlRates &pRates[]) {
+        for (int i = 0; i < ArraySize(pRates); i++) {
+            if (!Add(new Candle(pRates[i])))
+                if (VERBOSE) Print("Could'nt add a candle");
+        }
+    }
+};
+
+// ORDER
+class Deal : public CDealInfo {
+    public:
+    Deal(ulong pTicket) {
+        Ticket(pTicket);
+    }
+};
+class OrderEx : public CHistoryOrderInfo {
+    public:
+    OrderEx(ulong pTicket) {
+        Ticket(pTicket);
+    };
+    bool isValid(void) {
+        bool retBool = true;
+        State();
+        if (GetLastError() != 0) retBool = false;
+        ResetLastError();
+        return retBool;
     }
 };
