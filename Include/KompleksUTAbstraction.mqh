@@ -1633,7 +1633,7 @@ class DotRange : public CArrayObj {
                     ENUM_CHARTPATTERN_TYPE _cT = slice(_startMid, 1).append(slice(-2)).get3PointWaveCP(_useAngle).chartpattern;
                     if ( _cT == CHARTPATTERN_TYPE_TD) {
                         if (_swingMid == 0) _swingMid = A(_startMid).price;
-                        else if (A(_startMid).price < _swingMid) _swingMid = A(_startMid).price;
+                        else if (A(_startMid).price > _swingMid) _swingMid = A(_startMid).price;
                     } else if (_cT == CHARTPATTERN_TYPE_TU) {
                         if (_swingBot == 0) _swingBot = A(_startMid).price;
                         else if (A(_startMid).price > _swingBot) _swingBot = A(_startMid).price;
@@ -1664,7 +1664,7 @@ class DotRange : public CArrayObj {
                     ENUM_CHARTPATTERN_TYPE _cT = slice(_startMid, 1).append(slice(-2)).get3PointWaveCP(_useAngle).chartpattern;
                     if (_cT == CHARTPATTERN_TYPE_TU) {
                         if (_swingMid == 0) _swingMid = A(_startMid).price;
-                        else if (A(_startMid).price > _swingMid) _swingMid = A(_startMid).price;
+                        else if (A(_startMid).price < _swingMid) _swingMid = A(_startMid).price;
                     } else if (_cT == CHARTPATTERN_TYPE_TD) {
                         if (_swingTop == 0) _swingTop = A(_startMid).price;
                         else if (A(_startMid).price < _swingTop) _swingTop = A(_startMid).price;
@@ -1793,13 +1793,13 @@ class DotRange : public CArrayObj {
             CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGWEDGE;
         } else if (_conf.chartpattern == CHARTPATTERN_TYPE_NTTD) {
             CPconf.detected = true;
-            CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGWEDGEOPEN;
+            CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGWEDGEOPEN; //NOT COMMON
         } else if (_conf.chartpattern == CHARTPATTERN_TYPE_TDNT) {
             CPconf.detected = true;
             CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGWEDGE;
         } else if (_conf.chartpattern == CHARTPATTERN_TYPE_TUNT) {
             CPconf.detected = true;
-            CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGWEDGEOPEN;
+            CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGWEDGEOPEN; //NOT COMMON
         } else if (_conf.chartpattern == CHARTPATTERN_TYPE_NTNT) {
             CPconf.detected = true;
             CPconf.chartpattern = CHARTPATTERN_TYPE_FLAG;
