@@ -3323,8 +3323,3 @@ class DotRangee : public DotRange {
 
 //Functions
 double getChartAngle(CandleManager* _cMan, Dot& dot1, Dot& dot2) {return _cMan.pointPerTime(dot1, dot2);}
-
-
-//DotRangee toDotRangee(DotRange* _dRange) {
-
-//}

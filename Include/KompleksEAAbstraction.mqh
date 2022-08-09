@@ -990,7 +990,7 @@ class SignalIn {
     ENUM_SIGNAL SignalIn::PAtradeDirChartWave(int _days = 200, int inpDepth = 12, int inpDeviation = 5, int inpBackstep = 3, bool invert = false, bool multiMode = false) {
         return PAtradeDirChartWave(cMan.getChartWave(_days, inpDepth, inpDeviation, inpBackstep), invert, multiMode);
     }
-    ENUM_SIGNAL SignalIn::PAtradeChartPattern(DotRange* _CW, bool invert = false, bool multiMode = false, bool rectDraw = true) {
+    ENUM_SIGNAL SignalIn::PAtradeChartPattern(DotRange* _CW, bool invert = false, bool multiMode = false, bool rectDraw = true, bool _ray = false) {
         if (_CW.Total() < 7) {
             //delete _ZZBuffer;
             return SIGNAL_UNKNOWN;
@@ -998,11 +998,11 @@ class SignalIn {
         if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
         DotRange* last5 = _CW.slice(-7);
         if (last5 == NULL) return SIGNAL_UNKNOWN;
-        //STRUCT_CHARTPATTERN_CONF point5Pat = last5.getRealXPointWaveChartPattern(false);
+        STRUCT_CHARTPATTERN_CONF point5Pat = last5.getRealXPointWaveChartPattern(false);
         //STRUCT_CHARTPATTERN_CONF point5Pat = last5.getReal5PointWaveChartPattern(false);
         //STRUCT_CHARTPATTERN_CONF point5Pat = last5.getReal7PointWaveChartPattern(false);
-        STRUCT_CHARTPATTERN_CONF point5Pat = last5.getReal4PointWaveChartPattern(false);
-        if (point5Pat.chartpattern != CHARTPATTERN_TYPE_FLAG) return SIGNAL_UNKNOWN;
+        //STRUCT_CHARTPATTERN_CONF point5Pat = last5.getReal4PointWaveChartPattern(false);
+        //if (point5Pat.chartpattern != CHARTPATTERN_TYPE_RISINGTREND || point5Pat.chartpattern != CHARTPATTERN_TYPE_FLAG) return SIGNAL_UNKNOWN;
         STRUCT_CHARTPATTERN_PRED rPred;
         //leaks memory without delete
         static rectangle* rect;
@@ -1012,20 +1012,18 @@ class SignalIn {
         if (point5Pat.chartpattern == CHARTPATTERN_TYPE_DOUBLETOP || point5Pat.chartpattern == CHARTPATTERN_TYPE_DOUBLEBOTTOM) {
             if (DRAW) {
                 if (rectDraw) rect = new rectangle("rectt"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(0).time), last5.minimumBox(-5), last5.maximumBox(-5));
-                else drawDoubleChartPattern(last5, StringSubstr(EnumToString(point5Pat.chartpattern), 18), 2);
+                else drawDoubleChartPattern(last5, StringSubstr(EnumToString(point5Pat.chartpattern), 18), 2, _ray);
             }
             if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(point5Pat.chartpattern), 18) + " detected");
             if (!ANALYSIS) {
                 _CW.getWaveCPPredict(__pred, false, true);
+                rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
+                rPred.sl = __pred[0].sl;
                 if (point5Pat.chartpattern == CHARTPATTERN_TYPE_DOUBLETOP) {
-                    rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
                     rPred.predictedCP = CHARTPATTERN_TYPE_FALLINGFLAG;
-                    rPred.sl = __pred[0].sl;
                     rPred.tp = point5Pat.firstmove == 1 ? __pred[0].tp : __pred[2].tp;
                 } else {
-                    rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
                     rPred.predictedCP = CHARTPATTERN_TYPE_RISINGFLAG;
-                    rPred.sl = __pred[0].sl;
                     rPred.tp = point5Pat.firstmove == 1 ? __pred[2].tp : __pred[0].tp;
                 }
                 return wavePredictMarketPending(rPred, invert, multiMode);
@@ -1033,99 +1031,62 @@ class SignalIn {
         } else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_HEADSHOULDER || point5Pat.chartpattern == CHARTPATTERN_TYPE_INVHEADSHOULDER) {
             if (DRAW) {
                 if (rectDraw) rect = new rectangle("rectt"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(0).time), last5.minimumBox(-7), last5.maximumBox(-7));
-                else drawChannelHeadShoulder(last5, StringSubstr(EnumToString(point5Pat.chartpattern), 18), 2);
+                else drawChannelHeadShoulder(last5, StringSubstr(EnumToString(point5Pat.chartpattern), 18), 2, _ray);
             }
             if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(point5Pat.chartpattern), 18) + " detected");
             if (!ANALYSIS) {
                 _CW.getWaveCPPredict(__pred, false, true);
+                rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
+                rPred.sl = __pred[0].sl;
                 if (point5Pat.chartpattern == CHARTPATTERN_TYPE_HEADSHOULDER) {
-                    rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
                     rPred.predictedCP = point5Pat.firstmove == 1 ? CHARTPATTERN_TYPE_FALLINGFLAG : CHARTPATTERN_TYPE_FALLINGWEDGE;
-                    rPred.sl = __pred[0].sl;
                     rPred.tp = point5Pat.firstmove == 1 ? __pred[0].tp : _CW[-2].price;
                 } else {
-                    rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
                     rPred.predictedCP = point5Pat.firstmove == 1 ? CHARTPATTERN_TYPE_RISINGFLAG : CHARTPATTERN_TYPE_RISINGWEDGE;
-                    rPred.sl = __pred[0].sl;
                     rPred.tp = point5Pat.firstmove == 1 ? __pred[2].tp : __pred[0].tp;
                 }
                 return wavePredictMarketPending(rPred, invert, multiMode);
             }
         } else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_SYMMETRICALTRIANGLE || point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGWEDGE || point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGWEDGE ||
-                   point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGWEDGEOPEN || point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGWEDGEOPEN || point5Pat.chartpattern == CHARTPATTERN_TYPE_FLAG) {
+                   point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGWEDGEOPEN || point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGWEDGEOPEN || point5Pat.chartpattern == CHARTPATTERN_TYPE_FLAG ||
+                   point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGFLAG || point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGFLAG  || point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGTREND ||
+                   point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGTRENDOPEN || point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGTREND || point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGTRENDOPEN) {
             if (DRAW) {
                 if (rectDraw) rect = new rectangle("rectt"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(0).time), last5.minimumBox(-4), last5.maximumBox(-4));
                 else {
                     if (last5[-4] > last5[-3]) {
-                        drawTlineOnDotRangeIndex(last5, -4, -2, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-4).time), clrBlue, false, 2);
-                        drawTlineOnDotRangeIndex(last5, -3, -1, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-3).time), clrRed, false, 2);
+                        drawTlineOnDotRangeIndex(last5, -4, -2, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-4).time), clrBlue, _ray, 2);
+                        drawTlineOnDotRangeIndex(last5, -3, -1, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-3).time), clrRed, _ray, 2);
                     } else {
-                        drawTlineOnDotRangeIndex(last5, -3, -1, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-3).time), clrBlue, false, 2);
-                        drawTlineOnDotRangeIndex(last5, -4, -2, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-4).time), clrRed, false, 2);
+                        drawTlineOnDotRangeIndex(last5, -3, -1, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-3).time), clrBlue, _ray, 2);
+                        drawTlineOnDotRangeIndex(last5, -4, -2, "TL"+StringSubstr(EnumToString(point5Pat.chartpattern), 18)+IntegerToString(last5.A(-4).time), clrRed, _ray, 2);
                     }
                 }
             }
             if (ALERT_ON_SIGNAL) MessageBox(StringSubstr(EnumToString(point5Pat.chartpattern), 18) + " detected");
-            if (point5Pat.chartpattern == CHARTPATTERN_TYPE_SYMMETRICALTRIANGLE) {
-                if (!ANALYSIS) {
-                    _CW.getWaveCPPredict(__pred, false, true);
-                    rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
-                    rPred.predictedCP = CHARTPATTERN_TYPE_SYMMETRICALTRIANGLE;
-                    rPred.sl = __pred[0].sl;
-                    rPred.tp = __pred[0].tp;
-                    return wavePredictMarketPending(rPred, invert, multiMode);
-                }
-            } else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGWEDGE) {
-                if (!ANALYSIS) {
-                    _CW.getWaveCPPredict(__pred, false, true);
-                    rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
-                    rPred.predictedCP = CHARTPATTERN_TYPE_RISINGWEDGE;
-                    rPred.sl = __pred[0].sl;
+            if (!ANALYSIS) {
+                _CW.getWaveCPPredict(__pred, false, true);
+                rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
+                rPred.sl = __pred[0].sl;
+                rPred.predictedCP = point5Pat.chartpattern;
+                if (point5Pat.chartpattern == CHARTPATTERN_TYPE_SYMMETRICALTRIANGLE) rPred.tp = __pred[0].tp;
+                else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGWEDGE || point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGWEDGEOPEN) {
                     rPred.tp = point5Pat.firstmove == 1 ? __pred[0].tp : _CW[-2].price;
-                    return wavePredictMarketPending(rPred, invert, multiMode);
+                    if (point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGWEDGEOPEN) rPred.predictedCP = point5Pat.firstmove == 1 ? CHARTPATTERN_TYPE_RISINGFLAG : CHARTPATTERN_TYPE_FLAG;
                 }
-            } else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGWEDGE) {
-                if (!ANALYSIS) {
-                    _CW.getWaveCPPredict(__pred, false, true);
-                    rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
-                    rPred.predictedCP = CHARTPATTERN_TYPE_FALLINGWEDGE;
-                    rPred.sl = __pred[0].sl;
+                else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGWEDGE || point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGWEDGEOPEN) {
                     rPred.tp = point5Pat.firstmove == 1 ? _CW[-2].price : __pred[0].tp;
-                    return wavePredictMarketPending(rPred, invert, multiMode);
-                }
-            } else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGWEDGEOPEN) {
-                if (!ANALYSIS) {
-                    _CW.getWaveCPPredict(__pred, false, true);
-                    rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
-                    rPred.predictedCP = point5Pat.firstmove == 1 ? CHARTPATTERN_TYPE_FLAG : CHARTPATTERN_TYPE_FALLINGFLAG;
-                    rPred.sl = __pred[0].sl;
-                    rPred.tp = point5Pat.firstmove == 1 ? _CW[-2].price : __pred[0].tp;
-                    return wavePredictMarketPending(rPred, invert, multiMode);
-                }
-            } else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGWEDGEOPEN) {
-                if (!ANALYSIS) {
-                    _CW.getWaveCPPredict(__pred, false, true);
-                    rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
-                    rPred.predictedCP = point5Pat.firstmove == 1 ? CHARTPATTERN_TYPE_RISINGFLAG : CHARTPATTERN_TYPE_FLAG;
-                    rPred.sl = __pred[0].sl;
-                    rPred.tp = point5Pat.firstmove == 1 ? __pred[0].tp : _CW[-2].price;
-                    return wavePredictMarketPending(rPred, invert, multiMode);
-                }
-            } else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_FLAG) {
-                if (!ANALYSIS) {
-                    _CW.getWaveCPPredict(__pred, false, true);
-                    rPred.direction = point5Pat.firstmove == 1 ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
-                    rPred.predictedCP = CHARTPATTERN_TYPE_FLAG;
-                    rPred.sl = __pred[0].sl;
-                    rPred.tp = _CW[-2].price;
-                    return wavePredictMarketPending(rPred, invert, multiMode);
-                }
+                    if (point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGWEDGEOPEN) rPred.predictedCP = point5Pat.firstmove == 1 ? CHARTPATTERN_TYPE_FLAG : CHARTPATTERN_TYPE_FALLINGFLAG;
+                } else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_FLAG) rPred.tp = _CW[-2].price;
+                else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGFLAG || point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGTREND || point5Pat.chartpattern == CHARTPATTERN_TYPE_FALLINGTRENDOPEN) rPred.tp = point5Pat.firstmove == 1 ? __pred[2].tp : __pred[0].tp;
+                else if (point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGFLAG || point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGTREND || point5Pat.chartpattern == CHARTPATTERN_TYPE_RISINGTRENDOPEN) rPred.tp = point5Pat.firstmove == 1 ? __pred[0].tp : __pred[2].tp;
+                return wavePredictMarketPending(rPred, invert, multiMode);
             }
         }
         return SIGNAL_UNKNOWN;
     }
-    ENUM_SIGNAL SignalIn::PAtradeChartPattern(int _days = 200, int inpDepth = 12, int inpDeviation = 5, int inpBackstep = 3, bool invert = false, bool multiMode = false, bool rectDraw = true) {
-        return PAtradeChartPattern(cMan.getChartWave(_days, inpDepth, inpDeviation, inpBackstep), invert, multiMode, rectDraw);
+    ENUM_SIGNAL SignalIn::PAtradeChartPattern(int _days = 200, int inpDepth = 12, int inpDeviation = 5, int inpBackstep = 3, bool invert = false, bool multiMode = false, bool rectDraw = true, bool _ray = false) {
+        return PAtradeChartPattern(cMan.getChartWave(_days, inpDepth, inpDeviation, inpBackstep), invert, multiMode, rectDraw, _ray);
     }
     ENUM_SIGNAL SignalIn::PAtradeCPIf(DotRange* _CW, ENUM_CHARTPATTERN_TYPE _toSee = CHARTPATTERN_TYPE_NT, int _pick = 1, bool invert = false, bool multiMode = false) {
         if (DRAW) drawLinesDotRange(_CW, "wave", clrYellow);
@@ -1641,63 +1602,3 @@ class SignalOut {
         return true;
     }
 };
-/*
-        dR = msMan.getChartWave(DAYS, DEPTH, DEVIATION, BACKSTEP);
-        dR2 = msMan.getChartWave(DAYS/BACKSTEP, DEPTH/3, BACKSTEP/2, BACKSTEP/4);
-        //drawLinesDotRange(dR2, "dave", clrBlue);
-        //drawLinesDotRange(dR, "wave", clrYellow);
-        DotRange* dRR = dR.slice(-5, 4);
-        DotRange* dRR2 = dR2.slice(-5, 4);
-        
-        drawChannel4DotWave(SR, dRR, "ranger", true, 3);
-        drawChannel4DotWave(SR2, dRR2, "dranger", true, 1);
-        
-        ENUM_SIGNAL e11 = sIn.PApriceCrossTrendLine(upStatus, SR[0], false, true, 0);
-        ENUM_SIGNAL e12 = sIn.PApriceCrossTrendLine(downStatus, SR[1], false, true, 0);
-        
-        ENUM_SIGNAL e21 = sIn.PApriceCrossTrendLine(upStatus1, SR2[0], false, true, 0);
-        ENUM_SIGNAL e22 = sIn.PApriceCrossTrendLine(downStatus1, SR2[1], false, true, 0);
-        
-        double cPrice = cMan.currentPrice();
-        
-        if (!pMan.positionIsOpen()) {
-            if (e22 == SIGNAL_SELL && cPrice < SR[0].valueAtTime() && cPrice > SR[1].valueAtTime()) sIn.tradeSignal(e22);
-            else if (e21 == SIGNAL_BUY && cPrice > SR[1].valueAtTime() && cPrice < SR[0].valueAtTime()) sIn.tradeSignal(e21);
-        } else {
-            if (aMan.Profit() > 0) {
-                if ((pMan.PositionType() == POSITION_TYPE_SELL  && e11 == SIGNAL_BUY) ||
-                        (pMan.PositionType() == POSITION_TYPE_BUY  && e12 == SIGNAL_SELL)) {
-                    pMan.closePosition(false);
-                }
-            } else if (aMan.Profit() < 0) {
-                if ((pMan.PositionType() == POSITION_TYPE_SELL && cPrice > SR2[0].valueAtTime()) ||
-                        (pMan.PositionType() == POSITION_TYPE_BUY && cPrice < SR2[1].valueAtTime())) {
-                    pMan.closePosition(false);
-                }
-            }
-        }
-*/
-
-
-/*
-        PriceRange* highRange;
-        PriceRange* lowRange;
-        DateRange* dateRange;
-        highRange = cMan.lastNhighPrices(DAYS, 1, false);
-        lowRange = cMan.lastNlowPrices(DAYS, 1, false);
-        dateRange = cMan.lastNdates(DAYS, 1, false);
-        
-        DotRange* sH = new DotRange(highRange, dateRange).swingHighs();
-        DotRange* sL = new DotRange(lowRange, dateRange).swingLows();
-        
-        DotRange* startMax = new DotRange();
-        DotRange* endMax = new DotRange();
-        sH.allSlopes(startMax, endMax, LINE_LEN_MIN, DAY_DIFF, "DOWN");
-        
-        DotRange* startMin = new DotRange();
-        DotRange* endMin = new DotRange();
-        sL.allSlopes(startMin, endMin, LINE_LEN_MIN, DAY_DIFF, "UP");
-        
-        drawLinesPairAcrossDotRange(startMax, endMax);
-        drawLinesDotRangePair(startMin, endMin, "WaveChart", clrBlue);
-*/

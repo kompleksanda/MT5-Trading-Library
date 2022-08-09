@@ -1791,36 +1791,36 @@ class DotRange : public CArrayObj {
         } else if (_conf.chartpattern == CHARTPATTERN_TYPE_NTTU) {
             CPconf.detected = true;
             CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGWEDGE;
-        } else if (_conf.chartpattern == CHARTPATTERN_TYPE_NTTD) {
-            CPconf.detected = true;
-            CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGWEDGEOPEN; //NOT COMMON
         } else if (_conf.chartpattern == CHARTPATTERN_TYPE_TDNT) {
             CPconf.detected = true;
             CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGWEDGE;
-        } else if (_conf.chartpattern == CHARTPATTERN_TYPE_TUNT) {
-            CPconf.detected = true;
-            CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGWEDGEOPEN; //NOT COMMON
         } else if (_conf.chartpattern == CHARTPATTERN_TYPE_NTNT) {
             CPconf.detected = true;
             CPconf.chartpattern = CHARTPATTERN_TYPE_FLAG;
-        //} else if (_conf.chartpattern == CHARTPATTERN_TYPE_1U0U) {
-        //    CPconf.detected = true;
-        //    CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGTREND;
-        //} else if (_conf.chartpattern == CHARTPATTERN_TYPE_0U1U) {
-        //    CPconf.detected = true;
-        //    CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGTRENDOPEN;
-        //} else if (_conf.chartpattern == CHARTPATTERN_TYPE_0U0U) {
-        //    CPconf.detected = true;
-        //    CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGFLAG;
-        //} else if (_conf.chartpattern == CHARTPATTERN_TYPE_1D0D) {
-        //    CPconf.detected = true;
-        //    CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGTREND;
-        //} else if (_conf.chartpattern == CHARTPATTERN_TYPE_0D1D) {
-        //    CPconf.detected = true;
-        //    CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGTRENDOPEN;
-        //} else if (_conf.chartpattern == CHARTPATTERN_TYPE_0D0D) {
-        //    CPconf.detected = true;
-        //    CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGFLAG;
+        } else if (_conf.chartpattern == CHARTPATTERN_TYPE_1U0U) {
+            CPconf.detected = true;
+            CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGTREND;
+        } else if (_conf.chartpattern == CHARTPATTERN_TYPE_1D0D) {
+            CPconf.detected = true;
+            CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGTREND;
+        } else if (_conf.chartpattern == CHARTPATTERN_TYPE_0U1U) {
+            CPconf.detected = true;
+            CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGTRENDOPEN;
+        } else if (_conf.chartpattern == CHARTPATTERN_TYPE_0D1D) {
+            CPconf.detected = true;
+            CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGTRENDOPEN;
+        } else if (_conf.chartpattern == CHARTPATTERN_TYPE_0D0D) {
+            CPconf.detected = true;
+            CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGFLAG;
+        } else if (_conf.chartpattern == CHARTPATTERN_TYPE_0U0U) {
+            CPconf.detected = true;
+            CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGFLAG;
+        } else if (_conf.chartpattern == CHARTPATTERN_TYPE_TUNT) {
+            CPconf.detected = true;
+            CPconf.chartpattern = CHARTPATTERN_TYPE_RISINGWEDGEOPEN;
+        } else if (_conf.chartpattern == CHARTPATTERN_TYPE_NTTD) {
+            CPconf.detected = true;
+            CPconf.chartpattern = CHARTPATTERN_TYPE_FALLINGWEDGEOPEN;
         }
         return CPconf;
     }
